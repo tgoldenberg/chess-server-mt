@@ -1,0 +1,21 @@
+nav {
+  background: rgba(0,0,0,.5);
+  color: white;
+  min-height: 60px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  #login-buttons {
+    float: right;
+    margin-top: 15px;
+    margin-right: 30px;
+    .login-close-text {
+      float: right;
+    }
+    #login-dropdown-list {
+      left: -191px;
+
+    }
+  }
+}

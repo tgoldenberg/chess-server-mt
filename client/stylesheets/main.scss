@@ -1,0 +1,55 @@
+$primary-font: "OpenSans", Helvetica, Arial, sans-serif;
+$secondary-font: "OpenSansLight", "Helvetica Neue", Arial, sans-serif;
+$light-grey: #f7f7f7;
+$aqua-green: #78baa1;
+$between-green: #609581;
+$dark-green: #548271;
+$real-dark-green: #324E44;
+
+* {
+  -webkit-margin-before: 0;
+  -webkit-margin-end: 0;
+  -webkit-margin-after: 0;
+  -webkit-margin-start: 0;
+  font-size: 16px;
+}
+
+h1 {
+  margin: 0;
+}
+html {
+  height: 100%;
+}
+body, div {
+  height: inherit;
+}
+.splash-container {
+  background: url("landing_background.png") no-repeat;
+  background-size: cover;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .content-holder {
+    display: block;
+    text-align: center;
+    max-height: 50%;
+    h1 {
+      font-size: 6em;
+      letter-spacing: -1px;
+      @media screen and (max-width: 500px) {
+        font-size: 4em;
+      }
+    }
+    button {
+      background: $dark-green;
+      font-size: 1.5em;
+      padding: .7em 3.5em .7em 3.5em;
+      border: none;
+      letter-spacing: 2px;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+  }
+}
