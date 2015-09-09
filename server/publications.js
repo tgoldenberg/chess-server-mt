@@ -7,6 +7,6 @@ Meteor.publish('nextGame', function() {
 Meteor.publish('availableUsers', function() {
   var now = new Date();
   return AvailableUsers.find({
-    submitted: {$lt: new Date(now - 10*60*1000)}
+    submitted: {$gt: new Date(now - 10*60*1000)}
   });
 });
