@@ -1,3 +1,8 @@
 <template name="navbar">
-  <nav>{{>loginButtons align="left"}}</nav>
+  <nav>
+  {{#if tempUser }}
+    <div id="login-buttons">Hi {{username}}</div>
+  {{/if}}
+    {{>loginButtons align="left"}}
+  </nav>
 </template>
