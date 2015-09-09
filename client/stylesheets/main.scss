@@ -30,6 +30,7 @@ body, #main, .splash-container, .content-holder, .users-info {
   display: none;
 }
 .splash-container {
+  overflow: hidden;
   background: url("landing_background.png") no-repeat;
   background-size: cover;
   background-position: right top;

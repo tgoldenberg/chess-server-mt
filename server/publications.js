@@ -5,5 +5,8 @@ Meteor.publish('nextGame', function() {
   return NextGame.find();
 });
 Meteor.publish('availableUsers', function() {
-  return AvailableUsers.find();
+  var now = new Date();
+  return AvailableUsers.find({
+    submitted: {$lt: new Date(now - 10*60*1000)}
+  });
 });
