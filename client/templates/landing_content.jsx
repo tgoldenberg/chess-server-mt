@@ -24,12 +24,27 @@ var Splash = ReactMeteor.createClass({
     return AvailableUsers.find().count() > 0;
   },
   addSecondPlayer: function() {
+    var currentUserId = this.getUserId();
+    var currentUserUsername = this.getUsername();
     var userId = AvailableUsers.find().fetch()[0]._id
     var gameId = AvailableUsers.find().fetch()[0].gameId;
-    Meteor.call('availableUserDelete', userId, function(error, result) {
-      if (error) {console.log(error.reason);}
+    var p1 = new Promise(function(resolve, reject){
+      Meteor.call('availableUserDelete', userId, function(error, result) {
+        if (error) {console.log(error.reason);}
+        resolve();
+      });
     });
-    Router.go('game', { _id: gameId });
+    p1.then(function() {
+      var data = {
+        userId: currentUserId,
+        name: currentUserUsername,
+        gameId: gameId
+      };
+
+      this.updateGame(data);
+
+      Router.go('game', { _id: gameId });
+    }.bind(this));
   },
   createGame: function(availableUserId) {
     Meteor.call('gameInsert', this.userAttributes(), function(error, result) {
@@ -74,6 +89,7 @@ var Splash = ReactMeteor.createClass({
     $('#new-game').toggleClass('hidden');
   },
   updateGame: function(data) {
+    console.log("UPDATE GAME", data);
     Meteor.call('gameUpdate', data, function(error, result) {
       if (error)
         console.log(error.reason);
@@ -99,10 +115,11 @@ var Splash = ReactMeteor.createClass({
 			<div className="content-holder">
 				<div className="users-info">
 					<div className="available-info">
-						<p className="available-users">Available Users: {this.state.availableUsers.length}</p>
+						<p className="available-users">Users Waiting to Play: {this.state.availableUsers.length}</p>
 						<p>Logged In Users: </p>
             <p>Games in Play: </p>
             <p>Total Games Played: </p>
+            <p>Average Wait Time: </p>
             <p><a href="#">Leaderboard</a></p>
 					</div>
 				<div className="form-info">

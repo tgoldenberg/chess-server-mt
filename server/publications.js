@@ -10,3 +10,7 @@ Meteor.publish('availableUsers', function() {
     submitted: {$gt: new Date(now - 10*60*1000)}
   });
 });
+Meteor.publish('singleGame', function(id) {
+  check(id, String);
+  return Games.find(id);
+});
