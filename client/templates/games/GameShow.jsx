@@ -12,7 +12,8 @@ var GameShow = ReactMeteor.createClass({
       game: this.props,
       chess: new Chess(),
       currentUserId: Meteor.userId(),
-      currentUser: Meteor.user()
+      currentUser: Meteor.user(),
+      status: ""
     }
   },
   isPlayer: function() {
@@ -31,19 +32,46 @@ var GameShow = ReactMeteor.createClass({
       return this.getUserId() == this.state.game.white.userId ? "white" : "black";
     }
   },
-  componentDidUpdate: function() {
-    this.state.board.position(this.state.position);
-    var source = this.state.moves ? this.state.moves.source : "";
-    var target = this.state.moves ? this.state.moves.target : "";
-    var move = this.state.chess.move({
-      from: source,
-      to: target,
-      promotion: 'q'
-    });
+  needsUpdate: function() {
+    return  (this.state.chess.turn() == 'b' && this.userColor() == 'white') ||
+            (this.state.chess.turn() == 'w' && this.userColor() == 'black');
   },
+  componentDidUpdate: function() {
+    console.log(this.state.chess.history());
+    if (this.needsUpdate()) {
+      this.state.board.position(this.state.position);
+      var source = this.state.moves ? this.state.moves.source : "";
+      var target = this.state.moves ? this.state.moves.target : "";
+      var move = this.state.chess.move({
+        from: source,
+        to: target,
+        promotion: 'q'
+      });
+      if (move)
+        this.updateStatus(source, target);
+    }
+  },
+  updateStatus: function(source, target) {
+    var chess = this.state.chess;
+    var status = '';
+    var moveColor = 'White';
+    if (chess.turn() === 'b')
+      moveColor = 'Black';
+    // checkmate?
+    if (chess.in_checkmate() === true)
+      status = 'Game over, ' + moveColor + ' is in checkmate.';
+    else if (chess.in_draw() === true)
+      status = 'Game over, drawn position';
+    else
+      status = moveColor + ' to move';
+    if (chess.in_check() === true)
+      status += ', ' + moveColor + ' is in check';
 
+    this.setState({status: status});
+  },
   componentDidMount: function() {
     var chess = this.state.chess;
+
     var onDragStart = function(source, piece, position, orientation) {
       if (chess.game_over() === true ||
         (chess.turn() === 'w' && this.userColor() === 'black' ) ||
@@ -71,16 +99,14 @@ var GameShow = ReactMeteor.createClass({
         if (error)
           console.log(error.reason);
       });
+      this.updateStatus(source, target);
     }.bind(this);
 
     var cfg = {
       pieceTheme: '/{piece}.png',
-      position: this.state.position,
+      position: _.last(this.props.fen),
       draggable: true,
       orientation: this.userColor(),
-      snapSpeed: 100,
-      snapbackSpeed: 400,
-      moveSpeed: 'slow',
       onDrop: onDrop,
       onDragStart: onDragStart
     }
@@ -90,13 +116,14 @@ var GameShow = ReactMeteor.createClass({
   render: function() {
     var source = this.state.moves ? this.state.moves.source : "none"
     return (
-      <div className="game-wrapper">
-        <div style={{display: 'block'}}>
-          <p>board: {this.state.position}</p>
-          <p>chess: {this.state.chess.fen()}</p>
-          <p><b>Source: {source}</b></p>
+      <div id="game-page-wrapper">
+        <div className="game-wrapper">
+          <div className="player-info">Hey</div>
+          <div id="board"></div>
+          <div className="game-messages">{this.state.status}</div>
         </div>
-        <div id="board"></div>
+        <div className="mobile-player-info">Hey</div>
+        <div className="mobile-game-messages">Hi</div>
       </div>
     )
   }

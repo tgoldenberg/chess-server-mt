@@ -1,3 +1,6 @@
+#game-page-wrapper {
+  height: inherit;
+}
 .game-wrapper {
   height: inherit;
   display: flex;
@@ -9,5 +12,18 @@
     @media screen and (max-width: 500px) {
       width: 400px;
     }
+  }
+  .player-info, .game-messages {
+    height: inherit;
+    background: #f7f7f7;
+    width: 30%;
+    @media screen and (max-width: 500px) {
+      display: none;
+    }
+  }
+}
+.mobile-player-info, .mobile-game-messages {
+  @media screen and (min-width: 500px) {
+    display: none;
   }
 }
