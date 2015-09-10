@@ -37,8 +37,7 @@ var GameShow = ReactMeteor.createClass({
             (this.state.chess.turn() == 'w' && this.userColor() == 'black');
   },
   componentDidUpdate: function() {
-    console.log(this.state.chess.history());
-    if (this.needsUpdate()) {
+      if (this.needsUpdate()) {
       this.state.board.position(this.state.position);
       var source = this.state.moves ? this.state.moves.source : "";
       var target = this.state.moves ? this.state.moves.target : "";
@@ -71,6 +70,13 @@ var GameShow = ReactMeteor.createClass({
   },
   componentDidMount: function() {
     var chess = this.state.chess;
+    Games.findOne(this.state.game._id).moves.forEach(function(move){
+      this.state.chess.move({
+        from: move.source,
+        to: move.target,
+        promotion: 'q'
+      });
+    }.bind(this));
 
     var onDragStart = function(source, piece, position, orientation) {
       if (chess.game_over() === true ||
@@ -117,11 +123,12 @@ var GameShow = ReactMeteor.createClass({
     var source = this.state.moves ? this.state.moves.source : "none"
     var history = this.state.chess.history();
     var formattedHistory = history.map(function(notation, idx) {
-      if (idx % 2 == 0) {
-        var number = Math.ceil(idx/2) + 1;
-        return <span>{number}. {notation} </span>
-      } else {
-        return <span>|| {notation}<br/></span>
+      var number = Math.ceil(idx/2) + 1;
+      if (idx % 2 === 0 && idx + 1 == history.length) {
+        return <p><span>{number}. {notation}</span></p>
+      } else if (idx % 2 === 0) {
+        var next = history[idx + 1];
+        return <p><span>{number}. {notation}</span><span> || {next}</span></p>
       }
     });
 
@@ -135,7 +142,7 @@ var GameShow = ReactMeteor.createClass({
             <p className="game-status">Status</p>
             <p className="game-status-content">{this.state.status}</p>
             <p className="game-history">History</p>
-            <p className="game-history-content">{formattedHistory}</p>
+            <div className="game-history-content">{formattedHistory}</div>
             <p className="user-messages">Messages</p>
             <p className="user-messages-content">My Message</p>
           </div>
