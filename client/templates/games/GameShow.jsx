@@ -115,12 +115,30 @@ var GameShow = ReactMeteor.createClass({
 
   render: function() {
     var source = this.state.moves ? this.state.moves.source : "none"
+    var history = this.state.chess.history();
+    var formattedHistory = history.map(function(notation, idx) {
+      if (idx % 2 == 0) {
+        var number = Math.ceil(idx/2) + 1;
+        return <span>{number}. {notation} </span>
+      } else {
+        return <span>|| {notation}<br/></span>
+      }
+    });
+
+
     return (
       <div id="game-page-wrapper">
         <div className="game-wrapper">
           <div className="player-info">Hey</div>
           <div id="board"></div>
-          <div className="game-messages">{this.state.status}</div>
+          <div className="game-messages">
+            <p className="game-status">Status</p>
+            <p className="game-status-content">{this.state.status}</p>
+            <p className="game-history">History</p>
+            <p className="game-history-content">{formattedHistory}</p>
+            <p className="user-messages">Messages</p>
+            <p className="user-messages-content">My Message</p>
+          </div>
         </div>
         <div className="mobile-player-info">Hey</div>
         <div className="mobile-game-messages">Hi</div>

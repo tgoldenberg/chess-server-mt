@@ -1,5 +1,14 @@
+$primary-font: "OpenSans", Helvetica, Arial, sans-serif;
+$secondary-font: "OpenSansLight", "Helvetica Neue", Arial, sans-serif;
+$light-grey: #f7f7f7;
+$aqua-green: #78baa1;
+$between-green: #609581;
+$dark-green: #548271;
+$real-dark-green: #324E44;
+
 #game-page-wrapper {
   height: inherit;
+  overflow-y: hidden;
 }
 .game-wrapper {
   height: inherit;
@@ -7,8 +16,9 @@
   align-items: center;
   justify-content: center;
   #board {
-    margin-top: 60px;
-    width: 550px;
+    margin-top: 130px;
+    height: inherit;
+    width: 600px;
     @media screen and (max-width: 500px) {
       width: 400px;
     }
@@ -17,8 +27,23 @@
     height: inherit;
     background: #f7f7f7;
     width: 30%;
+    margin-top: 120px;
+    margin-left: 5px;
     @media screen and (max-width: 500px) {
       display: none;
+    }
+    .game-status, .game-history, .user-messages {
+      background: $dark-green;
+      font-size: 1.6em;
+      color: white;
+      padding: .3em 1em;
+      margin-left: -1px;
+    }
+    .game-status-content, .game-history-content, .user-messages-content {
+      padding: .6em;
+      font-size: 1.2em;
+      background: white;
+      margin: .5em;
     }
   }
 }
