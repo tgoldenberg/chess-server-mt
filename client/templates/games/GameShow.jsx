@@ -2,15 +2,24 @@ var GameShow = ReactMeteor.createClass({
   templateName: "gameShow",
   getMeteorState: function() {
     return {
-      availableUsers: AvailableUsers.find().fetch(),
-      nextGame: NextGame.find().fetch(),
-			currentUser: Session.get('currentUser'),
-			userId: Session.get('userId')
+      game: this.props,
+      currentUserId: Meteor.userId(),
+      currentUser: Meteor.user()
     };
+  },
+  componentDidMount: function() {
+    var cfg = {
+      pieceTheme: '/{piece}.png',
+      position: 'start',
+      draggable: true
+    };
+    var board1 = ChessBoard('board', cfg);
   },
   render: function() {
     return (
-      <h1>GAME SHOW</h1>
+      <div className="game-wrapper">
+        <div id="board"></div>
+      </div>
     )
   }
 });

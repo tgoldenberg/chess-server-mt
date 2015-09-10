@@ -1,0 +1,13 @@
+.game-wrapper {
+  height: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  #board {
+    margin-top: 60px;
+    width: 550px;
+    @media screen and (max-width: 500px) {
+      width: 400px;
+    }
+  }
+}
