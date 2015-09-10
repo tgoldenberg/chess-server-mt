@@ -49,6 +49,9 @@ body, #main, .splash-container, .content-holder, .users-info {
         padding-top: 80px;
         text-align: left;
         padding-left: 8%;
+        a {
+          color: #f2f2f2;
+        }
       }
     }
     .form-info {
@@ -90,7 +93,6 @@ body, #main, .splash-container, .content-holder, .users-info {
         padding-bottom: .3em;
       }
       input {
-        padding: .5em 0 0.5em .5em;
         width: 90%;
         margin-bottom: 10px;
         border-radius: 4px;
@@ -102,22 +104,13 @@ body, #main, .splash-container, .content-holder, .users-info {
         -webkit-rtl-ordering: logical;
         -webkit-user-select: text;
         background-color: rgb(255, 255, 255);
-        border: 1px solid rgb(115, 179, 229);
-        border-radius: 4px;
         box-shadow: rgba(0, 0, 0, 0.0745098) 0px 1px 1px 0px inset, rgba(102, 175, 232, 0.52549) 0px 0px 6.98431px 0px;
         box-sizing: border-box;
         color: rgb(85, 85, 85);
-        font-stretch: normal;
-        font-style: normal;
-        font-variant: normal;
-        font-weight: normal;
         height: 34px;
         letter-spacing: normal;
         line-height: 20px;
-        padding-bottom: 6px;
-        padding-left: 12px;
-        padding-right: 12px;
-        padding-top: 6px;
+        padding: 6px 12px 12px 6px;
         transition-delay: 0s, 0s;
         transition-duration: 0.15s, 0.15s;
         transition-property: border-color, box-shadow;
