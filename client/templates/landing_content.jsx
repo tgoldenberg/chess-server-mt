@@ -121,6 +121,7 @@ var Splash = ReactMeteor.createClass({
             <p>Total Games Played: </p>
             <p>Average Wait Time: </p>
             <p><a href="#">Leaderboard</a></p>
+            <p><a href="#">View Games in Progress</a></p>
 					</div>
 				<div className="form-info">
 					<h1>ChessMentor</h1><br/><br/>
