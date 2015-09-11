@@ -3,7 +3,9 @@ var GameShow = ReactMeteor.createClass({
   getMeteorState: function() {
     return {
       position: _.last(Games.findOne(this.props._id).fen),
-      moves: _.last(Games.findOne(this.props._id).moves)
+      moves: _.last(Games.findOne(this.props._id).moves),
+      status: Games.findOne(this.props._id).status,
+      pgn: Games.findOne(this.props._id).pgn
     };
   },
   getInitialState: function() {
@@ -13,7 +15,6 @@ var GameShow = ReactMeteor.createClass({
       chess: new Chess(),
       currentUserId: Meteor.userId(),
       currentUser: Meteor.user(),
-      status: ""
     }
   },
   isPlayer: function() {
@@ -37,6 +38,8 @@ var GameShow = ReactMeteor.createClass({
             (this.state.chess.turn() == 'w' && this.userColor() == 'black');
   },
   componentDidUpdate: function() {
+    var scroll = $('.game-history-content')[0].scrollHeight;
+    $('.game-history-content').scrollTop(scroll);
       if (this.needsUpdate()) {
       this.state.board.position(this.state.position);
       var source = this.state.moves ? this.state.moves.source : "";
@@ -66,7 +69,7 @@ var GameShow = ReactMeteor.createClass({
     if (chess.in_check() === true)
       status += ', ' + moveColor + ' is in check';
 
-    this.setState({status: status});
+    return status;
   },
   componentDidMount: function() {
     var chess = this.state.chess;
@@ -96,16 +99,18 @@ var GameShow = ReactMeteor.createClass({
       });
 
       if (move === null) return 'snapback';
+      console.log(this.state.chess.history());
       var data = {
         gameId: this.state.game._id,
         move: {source: source, target: target},
-        fen: chess.fen()
-      }
+        fen: chess.fen(),
+        status: this.updateStatus(source, target),
+        pgn: this.state.chess.history()
+      };
       Meteor.call('gameUpdateFen', data, function(error, result) {
         if (error)
           console.log(error.reason);
       });
-      this.updateStatus(source, target);
     }.bind(this);
 
     var cfg = {
@@ -120,15 +125,22 @@ var GameShow = ReactMeteor.createClass({
   },
 
   render: function() {
+    console.log("RENDER", this.state.chess.history().length);
     var source = this.state.moves ? this.state.moves.source : "none"
-    var history = this.state.chess.history();
+    var history = this.state.pgn;
     var formattedHistory = history.map(function(notation, idx) {
       var number = Math.ceil(idx/2) + 1;
       if (idx % 2 === 0 && idx + 1 == history.length) {
-        return <p><span>{number}. {notation}</span></p>
+        return <div className="history-line"><p className="last-move">{number}. {notation}</p></div>
       } else if (idx % 2 === 0) {
         var next = history[idx + 1];
-        return <p><span>{number}. {notation}</span><span> || {next}</span></p>
+        var lastMove = idx+2 == history.length ? "last-move" : "";
+        return (
+          <div className="history-line">
+            <p><span className="numbers">{number}.</span> {notation}</p>
+            <p className={lastMove}>{next}</p>
+          </div>
+        );
       }
     });
 

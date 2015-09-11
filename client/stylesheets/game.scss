@@ -27,10 +27,14 @@ $real-dark-green: #324E44;
     height: inherit;
     background: #f7f7f7;
     width: 30%;
-    margin-top: 120px;
+    margin-top: 130px;
     margin-left: 5px;
+    margin-right: 5px;
     @media screen and (max-width: 500px) {
       display: none;
+    }
+    .game-messages {
+      min-width: 321px;
     }
     .game-status, .game-history, .user-messages {
       background: $dark-green;
@@ -44,6 +48,35 @@ $real-dark-green: #324E44;
       font-size: 1.2em;
       background: white;
       margin: .5em;
+    }
+    .game-history-content {
+      height: 100px;
+      overflow-y: auto;
+    }
+  }
+  .history-line {
+    display: flex;
+    p:nth-child(1) {
+      float: left;
+      width: 50%;
+    }
+    p:nth-child(2) {
+      float: right;
+      width: 50%;
+    }
+    p {
+      letter-spacing: 1px;
+      font-weight: 300;
+      line-height: 2;
+      span.numbers {
+        font-weight: normal;
+      }
+    }
+    p.last-move {
+      background: rgba(201, 224, 253, 0.8);
+      border-radius: 2px;
+      padding-right: .2em;
+      padding-left: .2em;
     }
   }
 }
