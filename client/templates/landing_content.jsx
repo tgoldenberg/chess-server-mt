@@ -23,9 +23,23 @@ var Splash = ReactMeteor.createClass({
   gameReady: function() {
     return AvailableUsers.find().count() > 0;
   },
+	getUserRating: function()  {
+		return Meteor.userId() ? Meteor.user().profile.rating : 1200;
+	},
+	getUserCountry: function() {
+		return Meteor.userId() ? Meteor.user().profile.country : "United States";
+	},
+	getUserGamesWon: function() {
+		return Meteor.userId() ? Meteor.user().profile.gamesWon : 0;
+	},
+	getUserGamesLost: function() {
+		return Meteor.userId() ? Meteor.user().profile.gamesLost : 0;
+	},
+	getUserGamesPlayed: function() {
+		return Meteor.userId() ? Meteor.user().profile.gamesPlayed : 0;
+	},
   addSecondPlayer: function() {
-    var currentUserId = this.getUserId();
-    var currentUserUsername = this.getUsername();
+  	var data = this.userAttributes();
     var userId = AvailableUsers.find().fetch()[0]._id
     var gameId = AvailableUsers.find().fetch()[0].gameId;
     var p1 = new Promise(function(resolve, reject){
@@ -35,14 +49,8 @@ var Splash = ReactMeteor.createClass({
       });
     });
     p1.then(function() {
-      var data = {
-        userId: currentUserId,
-        name: currentUserUsername,
-        gameId: gameId
-      };
-
+      data.gameId = gameId;
       this.updateGame(data);
-
       Router.go('game', { _id: gameId });
     }.bind(this));
   },
@@ -54,7 +62,15 @@ var Splash = ReactMeteor.createClass({
     });
   },
   userAttributes: function() {
-    return { userId: this.getUserId(), name: this.getUsername() };
+    return {
+			userId: this.getUserId(),
+			name: this.getUsername(),
+			rating: this.getUserRating(),
+			country: this.getUserCountry(),
+			gamesPlayed: this.getUserGamesPlayed(),
+			gamesWon: this.getUserGamesWon(),
+			gamesLost: this.getUserGamesLost()
+		};
   },
   getUserId: function() {
     return Meteor.userId() ? Meteor.userId() : Session.get('userId');

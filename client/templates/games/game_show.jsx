@@ -54,9 +54,10 @@ var GameShow = ReactMeteor.createClass({
     if (this.needsUpdate()) {
       // modify board and insert move into the Chess() object
       this.state.board.position(this.state.position);
-      var move = this.state.chess.move(this.getMoveData());
+      var moveAttributes = this.getMoveData();
+      var move = this.state.chess.move(moveAttributes);
       if (move)
-        this.updateStatus(source, target);
+        this.updateStatus(moveAttributes.from, moveAttributes.to);
     }
   },
   updateStatus: function(source, target) {
