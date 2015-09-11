@@ -35,6 +35,7 @@ $dark-red: #8b4441;
     min-width: 500px;
     .button-holder {
       margin-right: 7%;
+      margin-top: 1em;
       padding-top: 1em;
       padding-left: 1%;
       padding-right: 1%;
@@ -45,15 +46,15 @@ $dark-red: #8b4441;
     }
     button {
       background: $dark-green;
-      font-size: 1em;
+      font-size: 1.3em;
       border: none;
-      padding: .6em 1.2em;
+      padding: .5em .2em;
       color: white;
       letter-spacing: 1px;
       font-weight: bold;
       border-radius: 4px;
       z-index: 9999;
-      width: 9em;
+      width: 7em;
 
     }
   }
@@ -64,9 +65,43 @@ $dark-red: #8b4441;
       height: 50%;
     }
     .current-player, .other-player {
-      min-height: 10em;
       max-width: 300px;
+      min-height: 300px;
       margin: auto;
+      .profile {
+        .profile-content {
+          overflow-y: hidden;
+          p {
+            font-size: 1.2em;
+            font-weight: 300;
+            line-height: 1.7;
+            padding: 0 1em;
+            overflow: hidden;
+            height: 1.7em;
+          }
+        }
+        .profile-header {
+          display: flex;
+          background: $darker-brown;
+          border-top-left-radius: 4px;
+          border-top-right-radius: 4px;
+          color: white;
+          .glyphicon-user {
+            padding: .4em;
+            font-size: 1.5em;
+            color: white;
+            background: $light-brown;
+            margin-bottom: 2px;
+            border-top-left-radius: 4px;
+          }
+          p {
+            font-size: 1.2em;
+            line-height: 2;
+            padding-left: 5px;
+            font-weight: 300;
+          }
+        }
+      }
       .timer {
         border-radius: 2px;
         height: 35%;
@@ -90,29 +125,26 @@ $dark-red: #8b4441;
         .timer-header {
           display: flex;
           border-bottom: 1px solid #c6c6c6;
-          font-size: 1em;
           padding-left: 1em;
           .minimize {
             display: flex;
             clear: both;
-            width: 25%;
             min-width: 50px;
           }
           .glyphicon-minus {
-            font-size: 1.4em;
+            font-size: 1em;
             margin-top: -1px;
             float: right;
-            /* margin-left: 4em; */
-            line-height: 2;
-            padding-left: .8em;
+            line-height: 2.2;
+            padding-left: 1em;
             color: #777;
             border-left: 1px solid #c6c6c6;
           }
           .timer-player {
-            width: 75%;
+            width: 100%;
             display: flex;
             .glyphicon, p {
-              font-size: 1.4em;
+              font-size: 1.2em;
               line-height: 2;
             }
             p {
@@ -128,15 +160,19 @@ $dark-red: #8b4441;
         }
       }
       .profile {
-        height: 50%;
-        background: aqua;
+        height: 48%;
+        background: white;
+        border-radius: 4px;
         margin-top: 10px;
-        margin-bottom: 10px;
-
       }
     }
     .other-player {
-      height: 50%;
+      height: 43%;
+    }
+    .current-player {
+      .profile {
+        height: 43%;
+      }
     }
   }
   div.player-info {
@@ -162,8 +198,6 @@ $dark-red: #8b4441;
         padding-top: 12px;
       }
     }
-
-
     .game-status, .game-history, .user-messages {
       background: $real-dark-green;
       font-size: 1.6em;

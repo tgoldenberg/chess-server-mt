@@ -215,7 +215,17 @@ var GameShow = ReactMeteor.createClass({
                   <div className="timer-content">5:00</div>
                 </div>
               </div>
-              <div className="profile"></div>
+              <div className="profile">
+                <div className="profile-header">
+                  <span className="glyphicon glyphicon-user"></span>
+                  <p>{this.getOpponentName()}</p>
+                </div>
+                <div className="profile-content">
+                  <p>Rating: 1200</p>
+                  <p>Games Played: 10</p>
+                  <p>Country: United States</p>
+                </div>
+              </div>
             </div>
             <div className="current-player">
               <div className="timer">
@@ -232,7 +242,17 @@ var GameShow = ReactMeteor.createClass({
                   <div className="timer-content">5:00</div>
                 </div>
               </div>
-              <div className="profile"></div>
+              <div className="profile">
+                <div className="profile-header">
+                  <span className="glyphicon glyphicon-user"></span>
+                  <p>{this.getBottomPlayerName()}</p>
+                </div>
+                <div className="profile-content">
+                  <p>Rating: 1200</p>
+                  <p>Games Played: 10</p>
+                  <p>Country: United States</p>
+                </div>
+              </div>
             </div>
           </div>
             <div className="board-holder">
