@@ -14,3 +14,10 @@ Meteor.publish('singleGame', function(id) {
   check(id, String);
   return Games.find(id);
 });
+
+Meteor.publish('rooms', function(sid) {
+  if(!sid)
+    return this.error(new Meteor.Error('sid null'));
+
+  return Streamy.Rooms.allForSession(sid);
+});

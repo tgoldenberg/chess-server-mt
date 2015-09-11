@@ -1,10 +1,13 @@
 $primary-font: "OpenSans", Helvetica, Arial, sans-serif;
 $secondary-font: "OpenSansLight", "Helvetica Neue", Arial, sans-serif;
-$light-grey: #f7f7f7;
+$light-grey: #e4e4e4;
 $aqua-green: #78baa1;
 $between-green: #609581;
 $dark-green: #548271;
+$light-brown: #827f62;
 $real-dark-green: #324E44;
+$darker-brown: #9B9981;
+$dark-red: #8b4441;
 
 #game-page-wrapper {
   height: inherit;
@@ -15,33 +18,218 @@ $real-dark-green: #324E44;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #e6e6e6;
   #board {
-    margin-top: 130px;
-    height: inherit;
-    width: 600px;
+    margin-top: 75px;
+    margin-right: 8%;
     @media screen and (max-width: 500px) {
       width: 400px;
     }
+    .board-b72b1 {
+      border: 2px solid black;
+    }
   }
-  .player-info, .game-messages {
+  .board-holder {
+    height: inherit;
+    width: 40%;
+    min-width: 500px;
+    .button-holder {
+      margin-right: 7%;
+      margin-top: 1em;
+      padding-top: 1em;
+      padding-left: 1%;
+      padding-right: 1%;
+      display: flex;
+    }
+    .button {
+      width: 33.3%;
+    }
+    button {
+      background: $dark-green;
+      font-size: 1.3em;
+      border: none;
+      padding: .5em .2em;
+      color: white;
+      letter-spacing: 1px;
+      font-weight: bold;
+      border-radius: 4px;
+      z-index: 9999;
+      width: 7em;
+
+    }
+  }
+  .player-info {
+    background: #e6e6e6;
+    padding: 1em;
+    .current-player {
+      height: 50%;
+    }
+    .current-player, .other-player {
+      max-width: 300px;
+      min-height: 300px;
+      margin: auto;
+      .profile {
+        .profile-content {
+          overflow-y: hidden;
+          p {
+            font-size: 1.2em;
+            font-weight: 300;
+            line-height: 1.7;
+            padding: 0 1em;
+            overflow: hidden;
+            height: 1.7em;
+          }
+        }
+        .profile-header {
+          display: flex;
+          background: $darker-brown;
+          border-top-left-radius: 4px;
+          border-top-right-radius: 4px;
+          color: white;
+          .glyphicon-user {
+            padding: .4em;
+            font-size: 1.5em;
+            color: white;
+            background: $light-brown;
+            margin-bottom: 2px;
+            border-top-left-radius: 4px;
+          }
+          p {
+            font-size: 1.2em;
+            line-height: 2;
+            padding-left: 5px;
+            font-weight: 300;
+          }
+        }
+      }
+      .timer {
+        border-radius: 2px;
+        height: 35%;
+        min-height: 125px;
+        background: white;
+        min-width: 12em;
+        .timer-holder {
+          padding: .5em 20%;
+          .timer-content {
+            background: $dark-red;
+            margin-bottom: 1em;
+            border-radius: 4px;
+            color: white;
+            text-align: center;
+            font-size: 2.5em;
+            padding-top: .2em;
+            font-weight: 300;
+            padding-bottom: .2em;
+          }
+        }
+        .timer-header {
+          display: flex;
+          border-bottom: 1px solid #c6c6c6;
+          padding-left: 1em;
+          .minimize {
+            display: flex;
+            clear: both;
+            min-width: 50px;
+          }
+          .glyphicon-minus {
+            font-size: 1em;
+            margin-top: -1px;
+            float: right;
+            line-height: 2.2;
+            padding-left: 1em;
+            color: #777;
+            border-left: 1px solid #c6c6c6;
+          }
+          .timer-player {
+            width: 100%;
+            display: flex;
+            .glyphicon, p {
+              font-size: 1.2em;
+              line-height: 2;
+            }
+            p {
+              margin-left: .4em;
+              color: #777;
+              font-weight: bold;
+              font-weight: 300;
+            }
+            .glyphicon {
+              color: $aqua-green;
+            }
+          }
+        }
+      }
+      .profile {
+        height: 48%;
+        background: white;
+        border-radius: 4px;
+        margin-top: 10px;
+      }
+    }
+    .other-player {
+      height: 43%;
+    }
+    .current-player {
+      .profile {
+        height: 43%;
+      }
+    }
+  }
+  div.player-info {
+    background: #e6e6e6;
+  }
+  .player-info, .game-messages,  {
     height: inherit;
     background: #f7f7f7;
-    width: 30%;
+    width: 33.3%;
     margin-top: 130px;
     margin-left: 5px;
     margin-right: 5px;
     @media screen and (max-width: 500px) {
       display: none;
     }
-    .game-messages {
-      min-width: 321px;
+
+    .messages-holder {
+      text-align: center;
+      input {
+        margin: auto;
+        width: 320px;
+        font-size: 1em;
+        padding-top: 12px;
+      }
     }
     .game-status, .game-history, .user-messages {
-      background: $dark-green;
+      background: $real-dark-green;
       font-size: 1.6em;
       color: white;
-      padding: .3em 1em;
       margin-left: -1px;
+    }
+    .game-history, .game-status, .user-messages {
+      background: $aqua-green;
+      border-radius: 4px;
+      height: 2em;
+      .glyphicon {
+        background: $dark-green;
+        padding: 0.47em;
+        font-size: 1em;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+      }
+      span:nth-child(2) {
+        font-size: 1em;
+        padding-left: 1em;
+      }
+    }
+    .game-status, .game-status .glyphicon {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .game-history, .game-history .glyphicon {
+      border-radius: 0;
+    }
+    .user-messages, .user-messages .glyphicon {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
     .game-status-content, .game-history-content, .user-messages-content {
       padding: .6em;
@@ -49,8 +237,11 @@ $real-dark-green: #324E44;
       background: white;
       margin: .5em;
     }
+    .game-status-content {
+      font-weight: 300;
+    }
     .game-history-content {
-      height: 100px;
+      height: 150px;
       overflow-y: auto;
     }
   }
@@ -77,6 +268,39 @@ $real-dark-green: #324E44;
       border-radius: 2px;
       padding-right: .2em;
       padding-left: .2em;
+    }
+  }
+  .player-info {
+    margin-top: 150px;
+  }
+}
+.game-messages {
+  min-width: 330px;
+  .messages-holder {
+    .user-messages-content {
+      text-align: left;
+      height: 4.5em;
+      overflow-y: auto;
+      background: #e6e6e6;
+      border-radius: 3px;
+      .message {
+        text-align: left;
+        p {
+
+        }
+        p.message-content {
+          background: white;
+          padding: .5em;
+          border-radius: 4px;
+          font-weight: 400;
+          width: 60%;
+        }
+        p.message-from {
+          font-weight: 300;
+          font-size: .8em;
+          padding: .4em;
+        }
+      }
     }
   }
 }
