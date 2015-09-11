@@ -1,10 +1,13 @@
 $primary-font: "OpenSans", Helvetica, Arial, sans-serif;
 $secondary-font: "OpenSansLight", "Helvetica Neue", Arial, sans-serif;
-$light-grey: #f7f7f7;
+$light-grey: #e4e4e4;
 $aqua-green: #78baa1;
 $between-green: #609581;
 $dark-green: #548271;
+$light-brown: #827f62;
 $real-dark-green: #324E44;
+$darker-brown: #9B9981;
+$dark-red: #8b4441;
 
 #game-page-wrapper {
   height: inherit;
@@ -15,18 +18,134 @@ $real-dark-green: #324E44;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #e6e6e6;
   #board {
-    margin-top: 130px;
-    height: inherit;
-    width: 600px;
+    margin-top: 75px;
+    margin-right: 8%;
     @media screen and (max-width: 500px) {
       width: 400px;
     }
+    .board-b72b1 {
+      border: 2px solid black;
+    }
   }
-  .player-info, .game-messages {
+  .board-holder {
+    height: inherit;
+    width: 40%;
+    min-width: 500px;
+    .button-holder {
+      margin-right: 7%;
+      padding-top: 1em;
+      padding-left: 1%;
+      padding-right: 1%;
+      display: flex;
+    }
+    .button {
+      width: 33.3%;
+    }
+    button {
+      background: $dark-green;
+      font-size: 1em;
+      border: none;
+      padding: .6em 1.2em;
+      color: white;
+      letter-spacing: 1px;
+      font-weight: bold;
+      border-radius: 4px;
+      z-index: 9999;
+      width: 9em;
+
+    }
+  }
+  .player-info {
+    background: #e6e6e6;
+    padding: 1em;
+    .current-player {
+      height: 50%;
+    }
+    .current-player, .other-player {
+      min-height: 10em;
+      max-width: 300px;
+      margin: auto;
+      .timer {
+        border-radius: 2px;
+        height: 35%;
+        min-height: 125px;
+        background: white;
+        min-width: 12em;
+        .timer-holder {
+          padding: .5em 20%;
+          .timer-content {
+            background: $dark-red;
+            margin-bottom: 1em;
+            border-radius: 4px;
+            color: white;
+            text-align: center;
+            font-size: 2.5em;
+            padding-top: .2em;
+            font-weight: 300;
+            padding-bottom: .2em;
+          }
+        }
+        .timer-header {
+          display: flex;
+          border-bottom: 1px solid #c6c6c6;
+          font-size: 1em;
+          padding-left: 1em;
+          .minimize {
+            display: flex;
+            clear: both;
+            width: 25%;
+            min-width: 50px;
+          }
+          .glyphicon-minus {
+            font-size: 1.4em;
+            margin-top: -1px;
+            float: right;
+            /* margin-left: 4em; */
+            line-height: 2;
+            padding-left: .8em;
+            color: #777;
+            border-left: 1px solid #c6c6c6;
+          }
+          .timer-player {
+            width: 75%;
+            display: flex;
+            .glyphicon, p {
+              font-size: 1.4em;
+              line-height: 2;
+            }
+            p {
+              margin-left: .4em;
+              color: #777;
+              font-weight: bold;
+              font-weight: 300;
+            }
+            .glyphicon {
+              color: $aqua-green;
+            }
+          }
+        }
+      }
+      .profile {
+        height: 50%;
+        background: aqua;
+        margin-top: 10px;
+        margin-bottom: 10px;
+
+      }
+    }
+    .other-player {
+      height: 50%;
+    }
+  }
+  div.player-info {
+    background: #e6e6e6;
+  }
+  .player-info, .game-messages,  {
     height: inherit;
     background: #f7f7f7;
-    width: 30%;
+    width: 33.3%;
     margin-top: 130px;
     margin-left: 5px;
     margin-right: 5px;
@@ -36,33 +155,56 @@ $real-dark-green: #324E44;
 
     .messages-holder {
       text-align: center;
-      .user-messages-content {
-        min-height: 6em;
-      }
       input {
         margin: auto;
-        width: 340px;
+        width: 320px;
         font-size: 1em;
         padding-top: 12px;
-        bottom: 0;
-        right: 0;
-        margin-right: 1px;
-        margin-bottom: 10px;
       }
     }
 
+
     .game-status, .game-history, .user-messages {
-      background: $dark-green;
+      background: $real-dark-green;
       font-size: 1.6em;
       color: white;
-      padding: .3em 1em;
       margin-left: -1px;
+    }
+    .game-history, .game-status, .user-messages {
+      background: $aqua-green;
+      border-radius: 4px;
+      height: 2em;
+      .glyphicon {
+        background: $dark-green;
+        padding: 0.47em;
+        font-size: 1em;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+      }
+      span:nth-child(2) {
+        font-size: 1em;
+        padding-left: 1em;
+      }
+    }
+    .game-status, .game-status .glyphicon {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .game-history, .game-history .glyphicon {
+      border-radius: 0;
+    }
+    .user-messages, .user-messages .glyphicon {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
     .game-status-content, .game-history-content, .user-messages-content {
       padding: .6em;
       font-size: 1.2em;
       background: white;
       margin: .5em;
+    }
+    .game-status-content {
+      font-weight: 300;
     }
     .game-history-content {
       height: 150px;
@@ -94,13 +236,16 @@ $real-dark-green: #324E44;
       padding-left: .2em;
     }
   }
+  .player-info {
+    margin-top: 150px;
+  }
 }
 .game-messages {
-  min-width: 441px;
+  min-width: 330px;
   .messages-holder {
     .user-messages-content {
       text-align: left;
-      height: 6em;
+      height: 4.5em;
       overflow-y: auto;
       background: #e6e6e6;
       border-radius: 3px;

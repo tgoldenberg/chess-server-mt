@@ -28,6 +28,22 @@ var GameShow = ReactMeteor.createClass({
   getUsername: function() {
     return Meteor.userId() ? Meteor.user().username : Session.get('currentUser');
   },
+  getOpponentName: function() {
+    var game = Games.findOne(this.props._id);
+    if (this.isPlayer() && this.userColor() == "black") {
+      return game.white ? game.white.name : "N/a";
+    } else {
+      return game.black ? game.black.name : "N/A";
+    }
+  },
+  getBottomPlayerName: function() {
+    if (this.isPlayer()) {
+      return this.getUsername();
+    } else {
+      var game = Games.findOne(this.props._id);
+      return game.white ? game.white.username : "N/A";
+    }
+  },
   checkGameColor: function(color) {
     return this.isPlayer() && this.state.game[color];
   },
@@ -69,7 +85,7 @@ var GameShow = ReactMeteor.createClass({
     var status;
     var moveColor = chess.turn() === 'b' ? 'Black' : 'White';
     if (chess.in_checkmate() === true)
-      status = `Game over, ${moveColor} is in checkmate.`;
+      status = `Game over, ${moveColor} is in checkmate`;
     else if (chess.in_draw() === true)
       status = 'Game over, drawn position';
     else
@@ -167,7 +183,7 @@ var GameShow = ReactMeteor.createClass({
     e.preventDefault();
     var message = $(e.target).find('input').val();
     $(e.target).find('input').val('');
-    Streamy.rooms(this.props._id).emit('outgoing_chat', { from: this.getUsername(), message: message });
+    Streamy.rooms(this.props._id).emit('outgoing_chat', { from: this.getUsername(), message: message, submitted: new Date() });
   },
 
   render: function() {
@@ -176,21 +192,69 @@ var GameShow = ReactMeteor.createClass({
       return (
         <div className="message">
           <p className="message-content">{msg.message}</p>
-          <p className="message-from">{msg.from}</p>
+          <p className="message-from">{msg.from} <span>{new Date(msg.submitted).toLocaleString()}</span></p>
         </div>
       )
     });
     return (
       <div id="game-page-wrapper">
         <div className="game-wrapper">
-          <div className="player-info">Hey</div>
-          <div id="board"></div>
+          <div className="player-info">
+            <div className="other-player">
+              <div className="timer">
+                <div className="timer-header">
+                  <div className="timer-player">
+                    <span className="glyphicon glyphicon-hourglass"></span>
+                    <p>{this.getOpponentName()}</p>
+                  </div>
+                  <div className="minimize">
+                    <span className="glyphicon glyphicon-minus"></span>
+                  </div>
+                </div>
+                <div className="timer-holder">
+                  <div className="timer-content">5:00</div>
+                </div>
+              </div>
+              <div className="profile"></div>
+            </div>
+            <div className="current-player">
+              <div className="timer">
+                <div className="timer-header">
+                  <div className="timer-player">
+                    <span className="glyphicon glyphicon-hourglass"></span>
+                    <p>{this.getBottomPlayerName()}</p>
+                  </div>
+                  <div className="minimize">
+                    <span className="glyphicon glyphicon-minus"></span>
+                  </div>
+                </div>
+                <div className="timer-holder">
+                  <div className="timer-content">5:00</div>
+                </div>
+              </div>
+              <div className="profile"></div>
+            </div>
+          </div>
+            <div className="board-holder">
+            <div id="board"></div>
+            <div className="button-holder">
+              <div className="button">
+                <button>Draw</button>
+              </div>
+              <div className="button">
+                <button>Resign</button>
+              </div>
+              <div className="button">
+                <button>Undo Move</button>
+              </div>
+            </div>
+          </div>
           <div className="game-messages">
-            <p className="game-status">Status</p>
+            <p className="game-status"><span className="glyphicon glyphicon-check"></span><span>Status</span></p>
             <p className="game-status-content">{this.state.status}</p>
-            <p className="game-history">History</p>
+            <p className="game-history"><span className="glyphicon glyphicon-th-list"></span><span>History</span></p>
             <div className="game-history-content">{formattedHistory}</div>
-            <p className="user-messages">Messages</p>
+            <p className="user-messages"><span className="glyphicon glyphicon-envelope"></span><span>Messages</span></p>
             <div className="messages-holder">
               <div className="user-messages-content">
                 {messages}
