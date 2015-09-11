@@ -33,9 +33,24 @@ $real-dark-green: #324E44;
     @media screen and (max-width: 500px) {
       display: none;
     }
-    .game-messages {
-      min-width: 321px;
+
+    .messages-holder {
+      text-align: center;
+      .user-messages-content {
+        min-height: 6em;
+      }
+      input {
+        margin: auto;
+        width: 340px;
+        font-size: 1em;
+        padding-top: 12px;
+        bottom: 0;
+        right: 0;
+        margin-right: 1px;
+        margin-bottom: 10px;
+      }
     }
+
     .game-status, .game-history, .user-messages {
       background: $dark-green;
       font-size: 1.6em;
@@ -50,7 +65,7 @@ $real-dark-green: #324E44;
       margin: .5em;
     }
     .game-history-content {
-      height: 100px;
+      height: 150px;
       overflow-y: auto;
     }
   }
@@ -77,6 +92,36 @@ $real-dark-green: #324E44;
       border-radius: 2px;
       padding-right: .2em;
       padding-left: .2em;
+    }
+  }
+}
+.game-messages {
+  min-width: 441px;
+  .messages-holder {
+    .user-messages-content {
+      text-align: left;
+      height: 6em;
+      overflow-y: auto;
+      background: #e6e6e6;
+      border-radius: 3px;
+      .message {
+        text-align: left;
+        p {
+
+        }
+        p.message-content {
+          background: white;
+          padding: .5em;
+          border-radius: 4px;
+          font-weight: 400;
+          width: 60%;
+        }
+        p.message-from {
+          font-weight: 300;
+          font-size: .8em;
+          padding: .4em;
+        }
+      }
     }
   }
 }

@@ -12,7 +12,8 @@ var GameShow = ReactMeteor.createClass({
     return {
       board: null,
       game: this.props,
-      chess: new Chess()
+      chess: new Chess(),
+      messages: []
     }
   },
   findPlayerId: function(key) {
@@ -23,6 +24,9 @@ var GameShow = ReactMeteor.createClass({
   },
   getUserId: function() {
     return Meteor.userId() ? Meteor.userId() : Session.get('userId');
+  },
+  getUsername: function() {
+    return Meteor.userId() ? Meteor.user().username : Session.get('currentUser');
   },
   checkGameColor: function(color) {
     return this.isPlayer() && this.state.game[color];
@@ -115,6 +119,16 @@ var GameShow = ReactMeteor.createClass({
     });
   },
   componentDidMount: function() {
+    if (this.isPlayer()) {
+      Streamy.join(this.props._id);
+    }
+    Streamy.on('outgoing_chat', function(data) {
+      var messages = this.state.messages;
+      messages.push(data);
+      this.setState({messages: messages});
+      var scroll = $('.user-messages-content')[0].scrollHeight;
+      $('.user-messages-content').scrollTop(scroll);
+    }.bind(this));
     this.renderPlayedGame();
     var cfg = {
       pieceTheme: '/{piece}.png',
@@ -148,8 +162,24 @@ var GameShow = ReactMeteor.createClass({
       }
     });
   },
+
+  submitMessage: function(e) {
+    e.preventDefault();
+    var message = $(e.target).find('input').val();
+    $(e.target).find('input').val('');
+    Streamy.rooms(this.props._id).emit('outgoing_chat', { from: this.getUsername(), message: message });
+  },
+
   render: function() {
     var formattedHistory = this.formatHistory();
+    var messages = this.state.messages.map(function(msg) {
+      return (
+        <div className="message">
+          <p className="message-content">{msg.message}</p>
+          <p className="message-from">{msg.from}</p>
+        </div>
+      )
+    });
     return (
       <div id="game-page-wrapper">
         <div className="game-wrapper">
@@ -161,7 +191,14 @@ var GameShow = ReactMeteor.createClass({
             <p className="game-history">History</p>
             <div className="game-history-content">{formattedHistory}</div>
             <p className="user-messages">Messages</p>
-            <p className="user-messages-content">My Message</p>
+            <div className="messages-holder">
+              <div className="user-messages-content">
+                {messages}
+              </div>
+              <form id="text-message" onSubmit={this.submitMessage}>
+                <input type="text" placeholder="Your message here"/>
+              </form>
+            </div>
           </div>
         </div>
         <div className="mobile-player-info">Hey</div>
