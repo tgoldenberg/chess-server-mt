@@ -12,67 +12,68 @@ var GameShow = ReactMeteor.createClass({
     return {
       board: null,
       game: this.props,
-      chess: new Chess(),
-      currentUserId: Meteor.userId(),
-      currentUser: Meteor.user(),
+      chess: new Chess()
     }
   },
+  findPlayerId: function(key) {
+    return this.props[key] ? this.props[key].userId : null;
+  },
   isPlayer: function() {
-    var userId = this.getUserId();
-    var blackId = this.props.black ? this.props.black.userId : null;
-    var whiteId = this.props.white ? this.props.white.userId : null;
-    return blackId == userId || whiteId == userId;
+    return _.contains([this.findPlayerId("black"), this.findPlayerId("white")], this.getUserId());
   },
   getUserId: function() {
     return Meteor.userId() ? Meteor.userId() : Session.get('userId');
   },
+  checkGameColor: function(color) {
+    return this.isPlayer() && this.state.game[color];
+  },
+  getUserColor: function(color, opposite) {
+    return this.getUserId() == this.state.game[color].userId ? color : opposite;
+  },
   userColor: function() {
-    if (this.isPlayer() && this.state.game.black) {
-      return this.getUserId() == this.state.game.black.userId ? "black" : "white";
-    } else if (this.isPlayer() && this.state.game.white) {
-      return this.getUserId() == this.state.game.white.userId ? "white" : "black";
-    }
+    if (this.checkGameColor("black"))
+      return this.getUserColor("black", "white");
+    else if (this.checkGameColor("white"))
+      return this.getUserColor("white", "black");
   },
   needsUpdate: function() {
     return  (this.state.chess.turn() == 'b' && this.userColor() == 'white') ||
             (this.state.chess.turn() == 'w' && this.userColor() == 'black');
   },
-  componentDidUpdate: function() {
+  adjustHistoryScroll: function() {
     var scroll = $('.game-history-content')[0].scrollHeight;
     $('.game-history-content').scrollTop(scroll);
-      if (this.needsUpdate()) {
+  },
+  getMoveData: function() {
+    var source = this.state.moves ? this.state.moves.source : "";
+    var target = this.state.moves ? this.state.moves.target : "";
+    return {from: source, to: target, promotion: 'q'};
+  },
+  componentDidUpdate: function() {
+    this.adjustHistoryScroll();
+    if (this.needsUpdate()) {
+      // modify board and insert move into the Chess() object
       this.state.board.position(this.state.position);
-      var source = this.state.moves ? this.state.moves.source : "";
-      var target = this.state.moves ? this.state.moves.target : "";
-      var move = this.state.chess.move({
-        from: source,
-        to: target,
-        promotion: 'q'
-      });
+      var move = this.state.chess.move(this.getMoveData());
       if (move)
         this.updateStatus(source, target);
     }
   },
   updateStatus: function(source, target) {
     var chess = this.state.chess;
-    var status = '';
-    var moveColor = 'White';
-    if (chess.turn() === 'b')
-      moveColor = 'Black';
-    // checkmate?
+    var status;
+    var moveColor = chess.turn() === 'b' ? 'Black' : 'White';
     if (chess.in_checkmate() === true)
-      status = 'Game over, ' + moveColor + ' is in checkmate.';
+      status = `Game over, ${moveColor} is in checkmate.`;
     else if (chess.in_draw() === true)
       status = 'Game over, drawn position';
     else
-      status = moveColor + ' to move';
+      status = `${moveColor} to move`;
     if (chess.in_check() === true)
-      status += ', ' + moveColor + ' is in check';
-
+      status += `, ${moveColor} is in check`;
     return status;
   },
-  componentDidMount: function() {
-    var chess = this.state.chess;
+  renderPlayedGame: function() {
     Games.findOne(this.state.game._id).moves.forEach(function(move){
       this.state.chess.move({
         from: move.source,
@@ -80,59 +81,61 @@ var GameShow = ReactMeteor.createClass({
         promotion: 'q'
       });
     }.bind(this));
+  },
+  onDragStart: function(source, piece, position, orientation) {
+    var chess = this.state.chess;
+    if (chess.game_over() === true ||
+      (chess.turn() === 'w' && this.userColor() === 'black' ) ||
+      (chess.turn() === 'b' && this.userColor() === 'white' ) ||
+      (chess.turn() === 'w' && piece.search(/^b/) != -1) ||
+      (chess.turn() === 'b' && piece.search(/^w/) != -1)) {
+        return false;
+    }
+  },
+  onDrop: function(source, target) {
+    var chess = this.state.chess;
+    var move = chess.move({
+      from: source,
+      to: target,
+      promotion: 'q'
+    });
+    if (move === null) return 'snapback';
 
-    var onDragStart = function(source, piece, position, orientation) {
-      if (chess.game_over() === true ||
-        (chess.turn() === 'w' && this.userColor() === 'black' ) ||
-        (chess.turn() === 'b' && this.userColor() === 'white' ) ||
-        (chess.turn() === 'w' && piece.search(/^b/) != -1) ||
-        (chess.turn() === 'b' && piece.search(/^w/) != -1)) {
-          return false;
-        }
-    }.bind(this);
-
-    var onDrop = function(source, target) {
-      var move = chess.move({
-        from: source,
-        to: target,
-        promotion: 'q'
-      });
-
-      if (move === null) return 'snapback';
-      console.log(this.state.chess.history());
-      var data = {
-        gameId: this.state.game._id,
-        move: {source: source, target: target},
-        fen: chess.fen(),
-        status: this.updateStatus(source, target),
-        pgn: this.state.chess.history()
-      };
-      Meteor.call('gameUpdateFen', data, function(error, result) {
-        if (error)
-          console.log(error.reason);
-      });
-    }.bind(this);
-
+    var data = {
+      gameId: this.state.game._id,
+      move: {source: source, target: target},
+      fen: chess.fen(),
+      status: this.updateStatus(source, target),
+      pgn: this.state.chess.history()
+    };
+    Meteor.call('gameUpdateFen', data, function(error, result) {
+      if (error)
+        console.log(error.reason);
+    });
+  },
+  componentDidMount: function() {
+    this.renderPlayedGame();
     var cfg = {
       pieceTheme: '/{piece}.png',
       position: _.last(this.props.fen),
       draggable: true,
       orientation: this.userColor(),
-      onDrop: onDrop,
-      onDragStart: onDragStart
+      onDrop: this.onDrop,
+      onDragStart: this.onDragStart
     }
     this.setState({board: new ChessBoard('board', cfg)})
   },
-
-  render: function() {
-    console.log("RENDER", this.state.chess.history().length);
-    var source = this.state.moves ? this.state.moves.source : "none"
+  formatHistory: function() {
     var history = this.state.pgn;
-    var formattedHistory = history.map(function(notation, idx) {
+    return history.map(function(notation, idx) {
       var number = Math.ceil(idx/2) + 1;
-      if (idx % 2 === 0 && idx + 1 == history.length) {
-        return <div className="history-line"><p className="last-move">{number}. {notation}</p></div>
-      } else if (idx % 2 === 0) {
+      if (idx % 2 === 0 && idx + 1 == history.length) { // even and last move
+        return (
+          <div className="history-line">
+            <p className="last-move"><span className="numbers">{number}.</span> {notation}</p>
+          </div>
+        );
+      } else if (idx % 2 === 0) { // previous moves
         var next = history[idx + 1];
         var lastMove = idx+2 == history.length ? "last-move" : "";
         return (
@@ -143,8 +146,9 @@ var GameShow = ReactMeteor.createClass({
         );
       }
     });
-
-
+  },
+  render: function() {
+    var formattedHistory = this.formatHistory();
     return (
       <div id="game-page-wrapper">
         <div className="game-wrapper">
@@ -162,6 +166,6 @@ var GameShow = ReactMeteor.createClass({
         <div className="mobile-player-info">Hey</div>
         <div className="mobile-game-messages">Hi</div>
       </div>
-    )
+    );
   }
 });
