@@ -2,11 +2,11 @@ var GameShow = ReactMeteor.createClass({
   templateName: "gameShow",
   getMeteorState: function() {
     return {
-      position: _.last(Games.findOne(this.props._id).fen),
       moves: _.last(Games.findOne(this.props._id).moves),
       status: Games.findOne(this.props._id).status,
       history: Games.findOne(this.props._id).history,
-      history: Games.findOne(this.props._id).history
+      pgn: Games.findOne(this.props._id).pgn,
+      gameOver: Games.findOne(this.props._id).gameOver
     };
   },
   getInitialState: function() {
@@ -14,7 +14,9 @@ var GameShow = ReactMeteor.createClass({
       board: null,
       game: this.props,
       chess: new Chess(),
-      messages: []
+      messages: [],
+      blackTimerSeconds: Games.findOne(this.props._id).blackTimer,
+      whiteTimerSeconds: Games.findOne(this.props._id).whiteTimer
     }
   },
   findPlayerId: function(key) {
@@ -42,7 +44,7 @@ var GameShow = ReactMeteor.createClass({
       return this.getUsername();
     } else {
       var game = Games.findOne(this.props._id);
-      return game.white ? game.white.username : "N/A";
+      return game.white ? game.white.name : "N/A";
     }
   },
   checkGameColor: function(color) {
@@ -74,36 +76,91 @@ var GameShow = ReactMeteor.createClass({
     this.adjustHistoryScroll();
     if (this.needsUpdate()) {
       // modify board and insert move into the Chess() object
-      this.state.board.position(this.state.position);
       var moveAttributes = this.getMoveData();
       var move = this.state.chess.move(moveAttributes);
-      if (move)
+      if (move) {
         this.updateStatus(moveAttributes.from, moveAttributes.to);
+        // change timer
+        this.state.board.position(this.state.chess.fen());
+        var history = this.state.chess.history().length;
+        var turn = this.state.chess.turn();
+        if (this.isFirstMove()) {
+          this.blackInterval = setInterval(this.blackTick, 1000);
+        } else if (! this.isFirstMove() && this.state.chess.turn() === 'w') {
+          clearInterval(this.blackInterval);
+          this.whiteInterval = setInterval(this.whiteTick, 1000);
+        } else if (! this.isFirstMove() && this.state.chess.turn() === 'b') {
+          clearInterval(this.whiteInterval);
+          this.blackInterval = setInterval(this.blackTick, 1000);
+        }
+      }
     }
+  },
+  clearIntervals: function() {
+    clearInterval(this.blackInterval);
+    clearInterval(this.whiteInterval);
   },
   updateStatus: function(source, target) {
     var chess = this.state.chess;
     var status;
     var moveColor = chess.turn() === 'b' ? 'Black' : 'White';
-    if (chess.in_checkmate() === true)
+    if (chess.in_checkmate() === true) {
       status = `Game over, ${moveColor} is in checkmate`;
-    else if (chess.in_draw() === true)
+      this.clearIntervals();
+    }
+    else if (chess.in_draw() === true){
       status = 'Game over, drawn position';
+      this.clearIntervals();
+    }
     else
       status = `${moveColor} to move`;
-    if (chess.in_check() === true)
+    if (chess.in_check() === true && chess.in_checkmate() != true)
       status += `, ${moveColor} is in check`;
     return status;
   },
   onDragStart: function(source, piece, position, orientation) {
     var chess = this.state.chess;
     if (chess.game_over() === true ||
+      (this.state.gameOver === true) ||
       (chess.turn() === 'w' && this.userColor() === 'black' ) ||
       (chess.turn() === 'b' && this.userColor() === 'white' ) ||
       (chess.turn() === 'w' && piece.search(/^b/) != -1) ||
       (chess.turn() === 'b' && piece.search(/^w/) != -1)) {
         return false;
     }
+  },
+  gameOver: function(color) {
+    this.clearIntervals();
+    var status = this.state.chess.game_over() ? this.updateStatus() : `Game over, ${color} wins on time`;
+    data = {
+      status: status,
+      gameId: this.props._id,
+      color: color
+    };
+    Meteor.call('gameOver', data, function(error, result) {
+      if (error)
+        console.log(error.reason);
+    })
+  },
+  blackTick: function() {
+    if (this.state.blackTimerSeconds == 0) {
+      this.gameOver('white');
+    } else {
+      this.setState({ blackTimerSeconds: this.state.blackTimerSeconds-1 });
+    }
+  },
+  whiteTick: function() {
+    if (this.state.whiteTimerSeconds == 0) {
+      this.gameOver('black');
+    } else {
+      this.setState({ whiteTimerSeconds: this.state.whiteTimerSeconds-1 });
+    }
+  },
+  onSnapEnd: function() {
+    this.state.board.position(this.state.chess.fen());
+  },
+  isFirstMove: function() {
+    return this.state.chess.history().length === 1;
   },
   onDrop: function(source, target) {
     var chess = this.state.chess;
@@ -114,27 +171,40 @@ var GameShow = ReactMeteor.createClass({
     });
     if (move === null) return 'snapback';
 
+    // change clock;
+    if (this.isFirstMove()) {
+      this.blackInterval = setInterval(this.blackTick, 1000);
+    } else if (! this.isFirstMove() && this.state.chess.turn() === 'w') {
+      clearInterval(this.blackInterval);
+      this.whiteInterval = setInterval(this.whiteTick, 1000);
+    } else if (! this.isFirstMove() && this.state.chess.turn() === 'b') {
+      clearInterval(this.whiteInterval);
+      this.blackInterval = setInterval(this.blackTick, 1000);
+    }
     var data = {
       gameId: this.state.game._id,
       move: {source: source, target: target},
       fen: chess.fen(),
       status: this.updateStatus(source, target),
       history: this.state.chess.history(),
-      pgn: this.state.chess.pgn()
+      pgn: this.state.chess.pgn(),
+      whiteTimer: this.state.whiteTimerSeconds,
+      blackTimer: this.state.blackTimerSeconds
     };
     Meteor.call('gameUpdateFen', data, function(error, result) {
       if (error)
         console.log(error.reason);
     });
+    if (this.state.chess.game_over()) {
+      this.gameOver(this.userColor());
+    }
   },
   componentWillUnmount: function() {
     Streamy.leave(this.props._id);
     Meteor.call('clearRooms');
-    
   },
   componentDidMount: function() {
     this.state.chess.load_pgn(Games.findOne(this.props._id).pgn);
-    console.log(this.state.chess);
     if (this.isPlayer()) {
       Streamy.join(this.props._id);
     }
@@ -153,6 +223,10 @@ var GameShow = ReactMeteor.createClass({
       draggable: this.isPlayer(),
       orientation: this.userColor(),
       onDrop: this.onDrop,
+      onSnapEnd: this.onSnapEnd,
+      snapSpeed: 100,
+      snapbackSpeed: 400,
+      moveSpeed: 'slow',
       onDragStart: this.onDragStart
     }
     this.setState({board: new ChessBoard('board', cfg)})
@@ -186,12 +260,26 @@ var GameShow = ReactMeteor.createClass({
     $(e.target).find('input').val('');
     Streamy.rooms(this.props._id).emit('outgoing_chat', { from: this.getUsername(), message: message, submitted: new Date() });
   },
+  pad: function (num) {
+    var str = num.toString();
+    if (str.length < 2)
+      str = "0" + str;
+    return str;
+  },
+  formatTime: function(seconds) {
+    var m = Math.floor(seconds / 60);
+    var s = Math.floor(seconds % 60);
+    return this.pad(m) + ":" + this.pad(s);
+  },
 
   render: function() {
+    var currentUserTimer = this.userColor() == 'white' ? this.state.whiteTimerSeconds : this.state.blackTimerSeconds;
+    var opponentTimer = this.userColor() == 'white' ? this.state.blackTimerSeconds : this.state.whiteTimerSeconds;
+
     var formattedHistory = this.formatHistory();
-    var messages = this.state.messages.map(function(msg) {
+    var messages = this.state.messages.map(function(msg, idx) {
       return (
-        <div className="message">
+        <div className="message" key={idx}>
           <p className="message-content">{msg.message}</p>
           <p className="message-from">{msg.from} <span>{new Date(msg.submitted).toLocaleString()}</span></p>
         </div>
@@ -213,7 +301,7 @@ var GameShow = ReactMeteor.createClass({
                   </div>
                 </div>
                 <div className="timer-holder">
-                  <div className="timer-content">5:00</div>
+                  <div className="timer-content" id="white">{this.formatTime(opponentTimer)}</div>
                 </div>
               </div>
               <div className="profile">
@@ -240,7 +328,7 @@ var GameShow = ReactMeteor.createClass({
                   </div>
                 </div>
                 <div className="timer-holder">
-                  <div className="timer-content">5:00</div>
+                  <div className="timer-content" id="black">{this.formatTime(currentUserTimer)}</div>
                 </div>
               </div>
               <div className="profile">
@@ -271,11 +359,20 @@ var GameShow = ReactMeteor.createClass({
             </div>
           </div>
           <div className="game-messages">
-            <p className="game-status"><span className="glyphicon glyphicon-check"></span><span>Status</span></p>
+            <p className="game-status">
+              <span className="glyphicon glyphicon-check"></span>
+              <span>Status</span>
+            </p>
             <p className="game-status-content">{this.state.status}</p>
-            <p className="game-history"><span className="glyphicon glyphicon-th-list"></span><span>History</span></p>
+            <p className="game-history">
+              <span className="glyphicon glyphicon-th-list"></span>
+              <span>History</span>
+            </p>
             <div className="game-history-content">{formattedHistory}</div>
-            <p className="user-messages"><span className="glyphicon glyphicon-envelope"></span><span>Messages</span></p>
+            <p className="user-messages">
+              <span className="glyphicon glyphicon-envelope"></span>
+              <span>Messages</span>
+            </p>
             <div className="messages-holder">
               <div className="user-messages-content">
                 {messages}
