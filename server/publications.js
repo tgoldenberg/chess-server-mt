@@ -24,3 +24,16 @@ Meteor.publish('rooms', function(sid) {
 Meteor.publish("userStatus", function() {
   Counts.publish(this, 'loggedIn', Meteor.users.find({ "status.online": true }));
 });
+
+Meteor.publish('gamesInPlay', function() {
+  var now = new Date();
+  Counts.publish(this, 'gamesCount', Games.find({completedAt: null}));
+})
+
+Meteor.publish('totalGames', function() {
+  Counts.publish(this, 'totalGames', Games.find());
+});
+
+Meteor.publish('twentyGames', function() {
+  return Games.find({}, {$sort: {createdAt: 1}, limit: 20});
+});
