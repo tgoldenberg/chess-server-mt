@@ -18,6 +18,5 @@ Meteor.publish('singleGame', function(id) {
 Meteor.publish('rooms', function(sid) {
   if(!sid)
     return this.error(new Meteor.Error('sid null'));
-
   return Streamy.Rooms.allForSession(sid);
 });

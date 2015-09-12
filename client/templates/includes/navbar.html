@@ -1,5 +1,6 @@
 <template name="navbar">
   <nav>
+    <div id="home"><a href="{{pathFor 'splash'}}">Home</a></div>
   {{#if tempUser }}
     <div id="login-buttons">Hi {{username}}</div>
   {{/if}}

@@ -7,6 +7,15 @@ nav {
   right: 0;
   left: 0;
   z-index: 999;
+  #home {
+    float: left;
+    height: 60px;
+    a {
+      line-height: 3;
+      margin-left: 3em;
+      color: white;
+    }
+  }
   #login-buttons {
     float: right;
     margin-top: 15px;

@@ -5,7 +5,8 @@ var GameShow = ReactMeteor.createClass({
       position: _.last(Games.findOne(this.props._id).fen),
       moves: _.last(Games.findOne(this.props._id).moves),
       status: Games.findOne(this.props._id).status,
-      pgn: Games.findOne(this.props._id).pgn
+      history: Games.findOne(this.props._id).history,
+      history: Games.findOne(this.props._id).history
     };
   },
   getInitialState: function() {
@@ -94,15 +95,6 @@ var GameShow = ReactMeteor.createClass({
       status += `, ${moveColor} is in check`;
     return status;
   },
-  renderPlayedGame: function() {
-    Games.findOne(this.state.game._id).moves.forEach(function(move){
-      this.state.chess.move({
-        from: move.source,
-        to: move.target,
-        promotion: 'q'
-      });
-    }.bind(this));
-  },
   onDragStart: function(source, piece, position, orientation) {
     var chess = this.state.chess;
     if (chess.game_over() === true ||
@@ -127,14 +119,22 @@ var GameShow = ReactMeteor.createClass({
       move: {source: source, target: target},
       fen: chess.fen(),
       status: this.updateStatus(source, target),
-      pgn: this.state.chess.history()
+      history: this.state.chess.history(),
+      pgn: this.state.chess.pgn()
     };
     Meteor.call('gameUpdateFen', data, function(error, result) {
       if (error)
         console.log(error.reason);
     });
   },
+  componentWillUnmount: function() {
+    Streamy.leave(this.props._id);
+    Meteor.call('clearRooms');
+    
+  },
   componentDidMount: function() {
+    this.state.chess.load_pgn(Games.findOne(this.props._id).pgn);
+    console.log(this.state.chess);
     if (this.isPlayer()) {
       Streamy.join(this.props._id);
     }
@@ -145,11 +145,12 @@ var GameShow = ReactMeteor.createClass({
       var scroll = $('.user-messages-content')[0].scrollHeight;
       $('.user-messages-content').scrollTop(scroll);
     }.bind(this));
-    this.renderPlayedGame();
+
+    // this.renderPlayedGame();
     var cfg = {
       pieceTheme: '/{piece}.png',
       position: _.last(this.props.fen),
-      draggable: true,
+      draggable: this.isPlayer(),
       orientation: this.userColor(),
       onDrop: this.onDrop,
       onDragStart: this.onDragStart
@@ -157,7 +158,7 @@ var GameShow = ReactMeteor.createClass({
     this.setState({board: new ChessBoard('board', cfg)})
   },
   formatHistory: function() {
-    var history = this.state.pgn;
+    var history = this.state.history;
     return history.map(function(notation, idx) {
       var number = Math.ceil(idx/2) + 1;
       if (idx % 2 === 0 && idx + 1 == history.length) { // even and last move
