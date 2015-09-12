@@ -19,6 +19,69 @@ var GameShow = ReactMeteor.createClass({
       whiteTimerSeconds: Games.findOne(this.props._id).whiteTimer
     }
   },
+
+  componentDidUpdate: function() {
+    this.adjustHistoryScroll();
+    if (this.needsUpdate()) {
+      // modify board and insert move into the Chess() object
+      var moveAttributes = this.getMoveData();
+      var move = this.state.chess.move(moveAttributes);
+      if (move) {
+        this.updateStatus(moveAttributes.from, moveAttributes.to);
+        // change timer
+        this.state.board.position(this.state.chess.fen());
+        var history = this.state.chess.history().length;
+        var turn = this.state.chess.turn();
+        if (this.isFirstMove()) {
+          this.blackInterval = setInterval(this.blackTick, 1000);
+        } else if (! this.isFirstMove() && this.state.chess.turn() === 'w') {
+          clearInterval(this.blackInterval);
+          this.whiteInterval = setInterval(this.whiteTick, 1000);
+        } else if (! this.isFirstMove() && this.state.chess.turn() === 'b') {
+          clearInterval(this.whiteInterval);
+          this.blackInterval = setInterval(this.blackTick, 1000);
+        }
+      }
+    }
+  },
+  componentWillUnmount: function() {
+    Streamy.leave(this.props._id);
+    Meteor.call('clearRooms');
+  },
+  componentDidMount: function() {
+    this.state.chess.load_pgn(Games.findOne(this.props._id).pgn);
+    if (this.isPlayer()) {
+      Streamy.join(this.props._id);
+    }
+    Streamy.on('outgoing_chat', function(data) {
+      var messages = this.state.messages;
+      messages.push(data);
+      this.setState({messages: messages});
+      var scroll = $('.user-messages-content')[0].scrollHeight;
+      $('.user-messages-content').scrollTop(scroll);
+    }.bind(this));
+
+    // this.renderPlayedGame();
+    var cfg = {
+      pieceTheme: '/{piece}.png',
+      position: _.last(this.props.fen),
+      draggable: this.isPlayer(),
+      orientation: this.userColor(),
+      onDrop: this.onDrop,
+      onSnapEnd: this.onSnapEnd,
+      snapSpeed: 100,
+      snapbackSpeed: 400,
+      moveSpeed: 'slow',
+      onDragStart: this.onDragStart
+    }
+    this.setState({board: new ChessBoard('board', cfg)})
+  },
+  userColor: function() {
+    if (this.checkGameColor("black"))
+      return this.getUserColor("black", "white");
+    else if (this.checkGameColor("white"))
+      return this.getUserColor("white", "black");
+  },
   findPlayerId: function(key) {
     return this.props[key] ? this.props[key].userId : null;
   },
@@ -53,12 +116,7 @@ var GameShow = ReactMeteor.createClass({
   getUserColor: function(color, opposite) {
     return this.getUserId() == this.state.game[color].userId ? color : opposite;
   },
-  userColor: function() {
-    if (this.checkGameColor("black"))
-      return this.getUserColor("black", "white");
-    else if (this.checkGameColor("white"))
-      return this.getUserColor("white", "black");
-  },
+
   needsUpdate: function() {
     return  (this.state.chess.turn() == 'b' && this.userColor() == 'white') ||
             (this.state.chess.turn() == 'w' && this.userColor() == 'black');
@@ -72,30 +130,7 @@ var GameShow = ReactMeteor.createClass({
     var target = this.state.moves ? this.state.moves.target : "";
     return {from: source, to: target, promotion: 'q'};
   },
-  componentDidUpdate: function() {
-    this.adjustHistoryScroll();
-    if (this.needsUpdate()) {
-      // modify board and insert move into the Chess() object
-      var moveAttributes = this.getMoveData();
-      var move = this.state.chess.move(moveAttributes);
-      if (move) {
-        this.updateStatus(moveAttributes.from, moveAttributes.to);
-        // change timer
-        this.state.board.position(this.state.chess.fen());
-        var history = this.state.chess.history().length;
-        var turn = this.state.chess.turn();
-        if (this.isFirstMove()) {
-          this.blackInterval = setInterval(this.blackTick, 1000);
-        } else if (! this.isFirstMove() && this.state.chess.turn() === 'w') {
-          clearInterval(this.blackInterval);
-          this.whiteInterval = setInterval(this.whiteTick, 1000);
-        } else if (! this.isFirstMove() && this.state.chess.turn() === 'b') {
-          clearInterval(this.whiteInterval);
-          this.blackInterval = setInterval(this.blackTick, 1000);
-        }
-      }
-    }
-  },
+
   clearIntervals: function() {
     clearInterval(this.blackInterval);
     clearInterval(this.whiteInterval);
@@ -199,38 +234,7 @@ var GameShow = ReactMeteor.createClass({
       this.gameOver(this.userColor());
     }
   },
-  componentWillUnmount: function() {
-    Streamy.leave(this.props._id);
-    Meteor.call('clearRooms');
-  },
-  componentDidMount: function() {
-    this.state.chess.load_pgn(Games.findOne(this.props._id).pgn);
-    if (this.isPlayer()) {
-      Streamy.join(this.props._id);
-    }
-    Streamy.on('outgoing_chat', function(data) {
-      var messages = this.state.messages;
-      messages.push(data);
-      this.setState({messages: messages});
-      var scroll = $('.user-messages-content')[0].scrollHeight;
-      $('.user-messages-content').scrollTop(scroll);
-    }.bind(this));
 
-    // this.renderPlayedGame();
-    var cfg = {
-      pieceTheme: '/{piece}.png',
-      position: _.last(this.props.fen),
-      draggable: this.isPlayer(),
-      orientation: this.userColor(),
-      onDrop: this.onDrop,
-      onSnapEnd: this.onSnapEnd,
-      snapSpeed: 100,
-      snapbackSpeed: 400,
-      moveSpeed: 'slow',
-      onDragStart: this.onDragStart
-    }
-    this.setState({board: new ChessBoard('board', cfg)})
-  },
   formatHistory: function() {
     var history = this.state.history;
     return history.map(function(notation, idx) {
@@ -290,80 +294,17 @@ var GameShow = ReactMeteor.createClass({
         <div className="game-wrapper">
           <div className="player-info">
             <div className="other-player">
-              <div className="timer">
-                <div className="timer-header">
-                  <div className="timer-player">
-                    <span className="glyphicon glyphicon-hourglass"></span>
-                    <p>{this.getOpponentName()}</p>
-                  </div>
-                  <div className="minimize">
-                    <span className="glyphicon glyphicon-minus"></span>
-                  </div>
-                </div>
-                <div className="timer-holder">
-                  <div className="timer-content" id="white">{this.formatTime(opponentTimer)}</div>
-                </div>
-              </div>
-              <div className="profile">
-                <div className="profile-header">
-                  <span className="glyphicon glyphicon-user"></span>
-                  <p>{this.getOpponentName()}</p>
-                </div>
-                <div className="profile-content">
-                  <p>Rating: 1200</p>
-                  <p>Games Played: 10</p>
-                  <p>Country: United States</p>
-                </div>
-              </div>
+              <Timer name={this.getOpponentName()} time={opponentTimer} />
+              <Profile name={this.getOpponentName()} rating={1200} gamesPlayed={4} country={"United States"}/>
             </div>
             <div className="current-player">
-              <div className="timer">
-                <div className="timer-header">
-                  <div className="timer-player">
-                    <span className="glyphicon glyphicon-hourglass"></span>
-                    <p>{this.getBottomPlayerName()}</p>
-                  </div>
-                  <div className="minimize">
-                    <span className="glyphicon glyphicon-minus"></span>
-                  </div>
-                </div>
-                <div className="timer-holder">
-                  <div className="timer-content" id="black">{this.formatTime(currentUserTimer)}</div>
-                </div>
-              </div>
-              <div className="profile">
-                <div className="profile-header">
-                  <span className="glyphicon glyphicon-user"></span>
-                  <p>{this.getBottomPlayerName()}</p>
-                </div>
-                <div className="profile-content">
-                  <p>Rating: 1200</p>
-                  <p>Games Played: 10</p>
-                  <p>Country: United States</p>
-                </div>
-              </div>
+              <Timer name={this.getUsername()} time={currentUserTimer} />
+              <Profile name={this.getBottomPlayerName()} rating={1200} gamesPlayed={4} country={"United States"} />
             </div>
           </div>
-            <div className="board-holder">
-            <div id="board"></div>
-            <div className="button-holder">
-              <div className="button">
-                <button>Draw</button>
-              </div>
-              <div className="button">
-                <button>Resign</button>
-              </div>
-              <div className="button">
-                <button>Undo Move</button>
-              </div>
-            </div>
-          </div>
+          <BoardComponent/>
           <div className="game-messages">
-            <p className="game-status">
-              <span className="glyphicon glyphicon-check"></span>
-              <span>Status</span>
-            </p>
-            <p className="game-status-content">{this.state.status}</p>
+            <StatusComponent status={this.state.status} />
             <p className="game-history">
               <span className="glyphicon glyphicon-th-list"></span>
               <span>History</span>
