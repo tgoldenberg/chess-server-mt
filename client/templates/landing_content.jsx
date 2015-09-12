@@ -4,7 +4,11 @@ var Splash = ReactMeteor.createClass({
     return {
       availableUsers: AvailableUsers.find().fetch(),
 			currentUser: Session.get('currentUser'),
-			userId: Session.get('userId')
+			userId: Session.get('userId'),
+			loggedInCount: Counts.get('loggedIn'),
+			gamesInPlay: Counts.get('gamesCount'),
+			totalGames: Counts.get('totalGames'),
+			recentGames: Games.find({joinedAt: { $ne: null}}, {$sort: {createdAt: 1}, limit: 20})
     };
   },
   sendToGame: function() {
@@ -105,7 +109,6 @@ var Splash = ReactMeteor.createClass({
     $('#new-game').toggleClass('hidden');
   },
   updateGame: function(data) {
-    console.log("UPDATE GAME", data);
     Meteor.call('gameUpdate', data, function(error, result) {
       if (error)
         console.log(error.reason);
@@ -127,15 +130,27 @@ var Splash = ReactMeteor.createClass({
 		Session.set('userId', makeid());
   },
 	render: function() {
+		var averageWait = 0;
+		if (this.state.recentGames.count() > 0 ) {
+			var timeDiff = 0;
+			this.state.recentGames.map(function(game, idx) {
+				timeDiff += (game.joinedAt - game.createdAt);
+			});
+			var milliseconds = timeDiff/this.state.recentGames.count();
+			var seconds = Math.floor(milliseconds/1000);
+			var points = ((milliseconds % 1000)/1000).toFixed(1).toString().slice(1);
+		 	averageWait = `${seconds}${points} seconds`;
+			console.log("AVG wait", timeDiff)
+		}
 		return (
 			<div className="content-holder">
 				<div className="users-info">
 					<div className="available-info">
 						<p className="available-users">Users Waiting to Play: {this.state.availableUsers.length}</p>
-						<p>Logged In Users: </p>
-            <p>Games in Play: </p>
-            <p>Total Games Played: </p>
-            <p>Average Wait Time: </p>
+						<p>Logged In Users: {this.state.loggedInCount}</p>
+            <p>Games in Play: {this.state.gamesInPlay}</p>
+            <p>Total Games Played: {this.state.totalGames}</p>
+            <p>Average Wait Time: {averageWait} </p>
             <p><a href="#">Leaderboard</a></p>
             <p><a href="#">View Games in Progress</a></p>
 					</div>
