@@ -4,7 +4,8 @@ var Splash = ReactMeteor.createClass({
     return {
       availableUsers: AvailableUsers.find().fetch(),
 			currentUser: Session.get('currentUser'),
-			userId: Session.get('userId')
+			userId: Session.get('userId'),
+			loggedInCount: Counts.get('loggedIn')
     };
   },
   sendToGame: function() {
@@ -132,7 +133,7 @@ var Splash = ReactMeteor.createClass({
 				<div className="users-info">
 					<div className="available-info">
 						<p className="available-users">Users Waiting to Play: {this.state.availableUsers.length}</p>
-						<p>Logged In Users: </p>
+						<p>Logged In Users: {this.state.loggedInCount}</p>
             <p>Games in Play: </p>
             <p>Total Games Played: </p>
             <p>Average Wait Time: </p>

@@ -20,3 +20,7 @@ Meteor.publish('rooms', function(sid) {
     return this.error(new Meteor.Error('sid null'));
   return Streamy.Rooms.allForSession(sid);
 });
+
+Meteor.publish("userStatus", function() {
+  Counts.publish(this, 'loggedIn', Meteor.users.find({ "status.online": true }));
+});
