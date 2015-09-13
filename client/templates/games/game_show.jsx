@@ -1,7 +1,10 @@
 var GameShow = ReactMeteor.createClass({
   templateName: "gameShow",
   getMeteorState: function() {
-    return { game: Games.findOne(this.props._id) };
+    return {
+      game: Games.findOne(this.props._id),
+      moves: _.last(Games.findOne(this.props._id).moves)
+    };
   },
   getInitialState: function() {
     return {
@@ -27,9 +30,13 @@ var GameShow = ReactMeteor.createClass({
     this.setState({board: new ChessBoard('board', cfg)}); // initialize chessboard
   },
   componentDidUpdate: function() {
+    console.log("NEW MOVE", this.needsUpdate());
     this.adjustHistoryScroll(); // show bottom of history
     if (this.needsUpdate()) { // listen for new moves
-      var move = this.state.chess.move(this.getMoveDate());
+      var moveAttributes = this.getMoveData()
+      var move = this.state.chess.move(moveAttributes);
+      console.log(this.getMoveData());
+      console.log(move);
       if (move) {
         this.updateStatus(moveAttributes.from, moveAttributes.to); // update status message
         this.state.board.position(this.state.chess.fen()); // update board
@@ -94,14 +101,20 @@ var GameShow = ReactMeteor.createClass({
       this.blackInterval = setInterval(this.blackTick, 1000);
     }
   },
-  gameOver: function(color) {
+  gameOver: function(color, status) {
     this.clearIntervals(); // stop timers
-    var status = this.state.chess.game_over() ? this.updateStatus() : `Game over, ${color} wins on time`;
+    var status = this.state.chess.game_over() ? this.updateStatus() : status;
     data = { status: status, gameId: this.props._id, color: color };
     Meteor.call('gameOver', data, function(error, result) { // set gameOver to true in Mongo
       if (error)
         console.log(error.reason);
     });
+  },
+  resign: function(color) {
+    this.gameOver(color, `Game over, ${color} resigns`);
+  },
+  handleResign: function(e) {
+    this.resign(this.userColor());
   },
   getMoveData: function() {
     var source = this.state.moves ? this.state.moves.source : "";
@@ -187,14 +200,15 @@ var GameShow = ReactMeteor.createClass({
   },
   blackTick: function() {
     if (this.state.blackTimerSeconds == 0) {
-      this.gameOver('white');
+      this.gameOver('white', `Game over, white wins on time`);
     } else {
       this.setState({ blackTimerSeconds: this.state.blackTimerSeconds-1 });
     }
   },
+
   whiteTick: function() {
     if (this.state.whiteTimerSeconds == 0) {
-      this.gameOver('black');
+      this.gameOver('black', `Game over, black wins on time`);
     } else {
       this.setState({ whiteTimerSeconds: this.state.whiteTimerSeconds-1 });
     }
@@ -219,7 +233,8 @@ var GameShow = ReactMeteor.createClass({
     });
   },
   formatHistory: function() {
-    return this.state.game.history.map(function(notation, idx) {
+    var history = this.state.game.history;
+    return history.map(function(notation, idx) {
       var number = Math.ceil(idx/2) + 1;
       var lastMove = "";
       var last = true;
@@ -231,7 +246,12 @@ var GameShow = ReactMeteor.createClass({
       }
       if (idx % 2 === 0) {
         return (
-          <HistoryLineComponent number={number} notation={notation} lastMove={lastMove} last={last} next={next} />
+          <HistoryLineComponent
+            number={number}
+            notation={notation}
+            lastMove={lastMove}
+            last={last}
+            next={next} />
         );
       }
     });
@@ -256,9 +276,9 @@ var GameShow = ReactMeteor.createClass({
               <Profile name={this.getBottomPlayerName()} rating={1200} gamesPlayed={4} country={"United States"} />
             </div>
           </div>
-          <BoardComponent/>
+          <BoardComponent handleResign={this.handleResign}/>
           <div className="game-messages">
-            <StatusComponent status={this.state.status} />
+            <StatusComponent status={this.state.game.status} />
             <HistoryComponent formattedHistory={formattedHistory}/>
             <MessagesComponent messages={messages} submitMessage={this.submitMessage} />
           </div>

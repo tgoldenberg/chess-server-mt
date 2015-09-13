@@ -27,7 +27,7 @@ Meteor.publish("userStatus", function() {
 
 Meteor.publish('gamesInPlay', function() {
   var now = new Date();
-  Counts.publish(this, 'gamesCount', Games.find({completedAt: null}));
+  Counts.publish(this, 'gamesCount', Games.find({completedAt: null, createdAt: {$gt: new Date() - 1000*60*10 }}));
 })
 
 Meteor.publish('totalGames', function() {

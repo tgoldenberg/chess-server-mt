@@ -15,7 +15,9 @@ HistoryLineComponent = ReactMeteor.createClass({
                 </div>
     }
     return (
-
+      <div>
+        {content}
+      </div>
     )
   }
 })

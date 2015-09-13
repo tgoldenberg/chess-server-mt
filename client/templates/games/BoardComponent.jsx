@@ -8,7 +8,7 @@ BoardComponent = ReactMeteor.createClass({
             <button>Draw</button>
           </div>
           <div className="button">
-            <button>Resign</button>
+            <button onClick={this.props.handleResign}>Resign</button>
           </div>
           <div className="button">
             <button>Undo Move</button>
