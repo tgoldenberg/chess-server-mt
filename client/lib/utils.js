@@ -68,6 +68,15 @@ Statuses = {
   },
   undoSent: function() {
     return "Your undo move request was successfully sent";
+  },
+  undoDecline: function(username) {
+    return username + " declined your request to take back the move";
+  },
+  drawDecline: function(username) {
+    return username + " declined your request for a draw";
+  },
+  undoDeclineSent: function() {
+    return "declined the request to take back move";
   }
 };
 

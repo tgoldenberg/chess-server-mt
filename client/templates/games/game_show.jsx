@@ -22,6 +22,7 @@ var GameShow = ReactMeteor.createClass({
     this.receiveDrawOffer(); // listen for draw offer
     this.receiveUndoRequest(); // listen for undo requests
     this.receiveUndoAcception(); // listen for undo accept
+    this.receiveUndoDecline(); // listen to decline of undo requests
     var data = {chess: this.state.chess};
     var config = new CFG(data, this.onDropCallback).render();
     var config = _.extend(config, {
@@ -174,6 +175,21 @@ var GameShow = ReactMeteor.createClass({
       SetScroll(messageElement);
     }.bind(this));
   },
+  receiveUndoDecline: function() {
+    Streamy.on('decline_undo', function(data) {
+      var message = {from : data.from, submitted: data.submitted };
+      if (this.getUserId() == data.message) {
+        message.message = Statuses.undoDecline(data.from); 
+      } else if (this.getUsername() == data.from) {
+        data.from = "Admin"; message.message = Statuses.undoDeclineSent();
+      }
+      var messages = this.state.messages;
+      messages.push(message);
+      this.setState({messages: messages});
+      var messageElement = $('.user-messages-content');
+      SetScroll(messageElement);
+    }.bind(this));
+  },
   handleUndoRequest: function() {
     if (! this.state.game.gameOver && this.state.chess.turn() != this.currentPlayerTurn()) {
       Streamy.rooms(this.props._id).emit('undo_request', {
@@ -318,7 +334,15 @@ var GameShow = ReactMeteor.createClass({
     var opponentTimer     = this.getTimer(this.getOpponentColor());
     var formattedHistory  = this.formatHistory();
     var messages = this.state.messages.map(function(msg, idx) {
-      return <MessageComponent idx={idx} msg={msg} acceptDraw={this.acceptDraw} acceptUndo={this.acceptUndo}/>;
+      return <MessageComponent
+        idx={idx}
+        msg={msg}
+        acceptDraw={this.acceptDraw}
+        acceptUndo={this.acceptUndo}
+        gameId={this.props._id}
+        opponent={this.getOpponentId()}
+        username={this.getUsername()}
+        />;
     }.bind(this));
     return (
       <div id="game-page-wrapper">
