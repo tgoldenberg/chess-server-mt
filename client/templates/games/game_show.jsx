@@ -23,6 +23,7 @@ var GameShow = ReactMeteor.createClass({
     this.receiveUndoRequest(); // listen for undo requests
     this.receiveUndoAcception(); // listen for undo accept
     this.receiveUndoDecline(); // listen to decline of undo requests
+    this.receiveDrawDecline(); // listen to decline of draw requests
     var data = {chess: this.state.chess};
     var config = new CFG(data, this.onDropCallback).render();
     var config = _.extend(config, {
@@ -122,15 +123,8 @@ var GameShow = ReactMeteor.createClass({
   },
   receiveDrawOffer: function() {
     Streamy.on('draw_offer', function(data) {
-      var message = {from: data.from, submitted: data.submitted};
-      if (this.getUserId() == data.message) {
-        message.message = Statuses.offerDraw(data.from); message.draw = true;
-      } else if (this.getUsername() == data.from) {
-        data.from = "Admin "; message.message = Statuses.messageSent;
-      }
-      var messages = this.state.messages;
-      messages.push(message);
-      this.setState({messages: messages});
+      var messages = Streams.drawOffer(data, this.state.messages, this.setState, this.getUserId(), this.getUsername());
+      setState({messages: messages});
       SetScroll($('.user-messages-content'));
     }.bind(this));
   },
@@ -179,9 +173,24 @@ var GameShow = ReactMeteor.createClass({
     Streamy.on('decline_undo', function(data) {
       var message = {from : data.from, submitted: data.submitted };
       if (this.getUserId() == data.message) {
-        message.message = Statuses.undoDecline(data.from); 
+        message.message = Statuses.undoDecline(data.from);
       } else if (this.getUsername() == data.from) {
         data.from = "Admin"; message.message = Statuses.undoDeclineSent();
+      }
+      var messages = this.state.messages;
+      messages.push(message);
+      this.setState({messages: messages});
+      var messageElement = $('.user-messages-content');
+      SetScroll(messageElement);
+    }.bind(this));
+  },
+  receiveDrawDecline: function() {
+    Streamy.on('decline_draw', function(data) {
+      var message = {from: data.from, submitted: data.submitted };
+      if (this.getUserId() == data.message) {
+        message.message = Statuses.drawDecline(data.from);
+      } else if (this.getUsername() == data.from) {
+        data.from = "Admin"; message.message = Statuses.drawDeclineSent();
       }
       var messages = this.state.messages;
       messages.push(message);

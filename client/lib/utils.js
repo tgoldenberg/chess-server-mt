@@ -1,3 +1,7 @@
+SetScroll =  function(domElement) {
+  domElement.scrollTop(domElement[0].scrollHeight);
+};
+
 CFG = function(data, callback) {
   this.pieceTheme = '/{piece}.png';
   this.snapSpeed = 100;
@@ -24,6 +28,20 @@ CFG.prototype = {
     };
   }
 }
+Streams = {
+  drawOffer: function(data, messages, setState, userId, username) {
+    var message = {from: data.from, submitted: data.submitted};
+    if (userId == data.message) {
+      message.message = Statuses.offerDraw(data.from); message.draw = true;
+    } else if (username == data.from) {
+      data.from = "Admin "; message.message = Statuses.messageSent();
+    }
+    var newMessages = messages;
+    newMessages.push(message);
+    return newMessages;
+  }
+};
+
 DataHash = function(data) {
   this.chess = data.chess;
   this.gameId = data.gameId;
@@ -70,16 +88,15 @@ Statuses = {
     return "Your undo move request was successfully sent";
   },
   undoDecline: function(username) {
-    return username + " declined your request to take back the move";
+    return username + " declined your request";
   },
   drawDecline: function(username) {
-    return username + " declined your request for a draw";
+    return username + " declined your request";
   },
   undoDeclineSent: function() {
-    return "declined the request to take back move";
+    return "Successfully declined request";
+  },
+  drawDeclineSent: function() {
+    return "Successfully declined request";
   }
-};
-
-SetScroll =  function(domElement) {
-  domElement.scrollTop(domElement[0].scrollHeight);
 };
