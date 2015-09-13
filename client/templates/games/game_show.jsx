@@ -22,19 +22,20 @@ var GameShow = ReactMeteor.createClass({
     this.receiveDrawOffer(); // listen for draw offer
     this.receiveUndoRequest(); // listen for undo requests
     this.receiveUndoAcception(); // listen for undo accept
-    var cfg = _.extend(CFG, {
+    var data = {chess: this.state.chess};
+    var config = new CFG(data, this.onDropCallback).render();
+    var config = _.extend(config, {
       position    : _.last(this.state.game.fen),
       draggable   : this.isPlayer(),
       orientation : this.userColor(),
-      onDrop      : this.onDrop,
-      onSnapEnd   : this.onSnapEnd,
-      onDragStart : this.onDragStart
+      onDragStart : this.onDragStart,
+      onSnapEnd   : this.onSnapEnd
     });
-    this.setState({board: new ChessBoard('board', cfg)}); // initialize chessboard
+    this.setState({board: new ChessBoard('board', config)}); // initialize chessboard
   },
   componentDidUpdate: function() {
-    this.adjustHistoryScroll(); // show bottom of history
     if (this.needsUpdate()) { // listen for new moves
+      SetScroll($('.game-history-content')); // show bottom of history
       var moveAttributes = this.getMoveData()
       var move = this.state.chess.move(moveAttributes);
       if (move) {
@@ -48,16 +49,14 @@ var GameShow = ReactMeteor.createClass({
     Streamy.leave(this.props._id); // leave room
     Meteor.call('clearRooms'); // clear all empty rooms from Mongo
   },
-  onDrop: function(source, target) {
-    var move = this.state.chess.move({from: source, to: target, promotion: 'q' }); // execute move
-    if (move === null) return 'snapback';
+  onDropCallback: function(source, target) {
     this.switchTurn(); // change timer
     this.persistMove(source, target); // send move to Mongo
     if (this.state.chess.game_over()) { // check for game over
       this.gameOver(this.userColor());
     }
   },
-  onDragStart: function(source, piece, position, orientation) { // set draggability
+  onDragStart: function(source, piece, position, orientation) {
     var chess = this.state.chess;
     if (chess.game_over() === true ||
       (this.state.game.gameOver === true) ||
@@ -76,38 +75,38 @@ var GameShow = ReactMeteor.createClass({
     var status;
     var moveColor = chess.turn() === 'b' ? 'Black' : 'White';
     if (chess.in_checkmate() === true) { // checkmate?
-      status = `Game over, ${moveColor} is in checkmate`;
+      status = Statuses.gameOver(moveColor);
       this.clearIntervals(); // stop timers
     }
-    else if (chess.in_draw() === true){ // draw?
-      status = 'Game over, drawn position';
+    else if (chess.in_draw() === true) { // draw?
+      status = Statuses.draw();
       this.clearIntervals();
     }
     else // regular play?
-      status = `${moveColor} to move`;
+      status = Statuses.inPlay(moveColor);
     if (chess.in_check() === true && chess.in_checkmate() != true)
-      status += `, ${moveColor} is in check`;
+      status += Statuses.inCheck(moveColor);
     return status;
   },
   switchTurn: function(undo) {
-    if (this.isFirstMove() && !undo) { // set black interval
-      this.blackInterval = setInterval(this.blackTick, 1000);
-    } else if ( this.isFirstMove() && undo) {
-      clearInterval(this.whiteTick, 1000);
-      this.blackInterval = setInterval(this.blackTick, 1000);
-    } else if (! this.isFirstMove() && this.state.chess.turn() === 'w') {
-      clearInterval(this.blackInterval);
-      this.whiteInterval = setInterval(this.whiteTick, 1000);
-    } else if (! this.isFirstMove() && this.state.chess.turn() === 'b') {
-      clearInterval(this.whiteInterval);
-      this.blackInterval = setInterval(this.blackTick, 1000);
+    if (this.state.chess.turn() === 'w') {
+      this.switchTimers("blackInterval", "whiteTick", "whiteInterval");
+    } else if (this.state.chess.turn() === 'b') {
+      this.switchTimers("whiteInterval", "blackTick", "blackInterval");
     }
+  },
+  switchTimers: function(prev, next, interval) {
+    clearInterval(this[prev]);
+    this[interval] = setInterval(this[next], 1000);
+    return;
   },
   gameOver: function(color, status) {
     this.clearIntervals(); // stop timers
     var status = this.state.chess.game_over() ? this.updateStatus() : status;
     data = { status: status, gameId: this.props._id, color: color };
-    Meteor.call('gameOver', data, function(error, result) {});
+    Meteor.call('gameOver', data, function(error, result) {
+      if (error) console.log(error.reason);
+    });
   },
   resign: function(color) {
     this.gameOver(color, `Game over, ${color} resigns`);
@@ -124,16 +123,14 @@ var GameShow = ReactMeteor.createClass({
     Streamy.on('draw_offer', function(data) {
       var message = {from: data.from, submitted: data.submitted};
       if (this.getUserId() == data.message) {
-        message.message = data.from + " offers a draw. Do you accept?";
-        message.draw = true;
+        message.message = Statuses.offerDraw(data.from); message.draw = true;
       } else if (this.getUsername() == data.from) {
-        data.from = "Admin ";
-        message.message = "Your draw request was successfully sent";
+        data.from = "Admin "; message.message = Statuses.messageSent;
       }
       var messages = this.state.messages;
       messages.push(message);
       this.setState({messages: messages});
-      this.setMessageScroll();
+      SetScroll($('.user-messages-content'));
     }.bind(this));
   },
   acceptUndo: function() {
@@ -166,20 +163,18 @@ var GameShow = ReactMeteor.createClass({
     Streamy.on('undo_request', function(data) {
       var message = {from : data.from, submitted: data.submitted };
       if (this.getUserId() == data.message) {
-        message.message = data.from + " wishes to undo a move. Do you accept?";
-        message.undo = true;
+        message.message = Statuses.undoRequest(data.from); message.undo = true;
       } else if (this.getUsername() == data.from) {
-        data.from = "Admin";
-        message.message = "Your undo move request was successfully sent";
+        data.from = "Admin"; message.message = Statuses.undoSent();
       }
       var messages = this.state.messages;
       messages.push(message);
       this.setState({messages: messages});
-      this.setMessageScroll();
+      var messageElement = $('.user-messages-content');
+      SetScroll(messageElement);
     }.bind(this));
   },
   handleUndoRequest: function() {
-    console.log("UNDO REQUEST");
     if (! this.state.game.gameOver && this.state.chess.turn() != this.currentPlayerTurn()) {
       Streamy.rooms(this.props._id).emit('undo_request', {
         from: this.getUsername(), message: this.getOpponentId(), submitted: new Date()
@@ -198,14 +193,6 @@ var GameShow = ReactMeteor.createClass({
     var target = this.state.moves ? this.state.moves.target : "";
     return {from: source, to: target, promotion: 'q'};
   },
-  submitMessage: function(e) {
-    e.preventDefault();
-    var message = $(e.target).find('input').val();
-    $(e.target).find('input').val('');
-    // send socket message via Streamy
-    Streamy.rooms(this.props._id).emit('outgoing_chat',
-      { from: this.getUsername(), message: message, submitted: new Date() });
-  },
   joinRoom: function() { // connect current user with Streamy room
     if (this.isPlayer()) {
       Streamy.join(this.props._id);
@@ -214,16 +201,12 @@ var GameShow = ReactMeteor.createClass({
   currentPlayerTurn: function() {
     return this.userColor() == 'black' ? 'b' : 'w';
   },
-  setMessageScroll: function() { // scroll to bottom of messages
-    var scroll = $('.user-messages-content')[0].scrollHeight;
-    $('.user-messages-content').scrollTop(scroll);
-  },
   listenForMessages: function() { // Streamy event listener for messages
     Streamy.on('outgoing_chat', function(data) {
       var messages = this.state.messages;
       messages.push(data);
       this.setState({messages: messages});
-      this.setMessageScroll();
+      SetScroll($('.user-messages-content'));
     }.bind(this));
   },
   userColor: function() { // determine current user color
@@ -237,6 +220,9 @@ var GameShow = ReactMeteor.createClass({
   },
   getUserColor: function(color, opposite) { // validate Meteor Id and Game.color
     return this.getUserId() == this.state.game[color].userId ? color : opposite;
+  },
+  getOpponentColor: function(color, opposite) {
+    return this.userColor() == "white" ? "black" : "white";
   },
   isPlayer: function() { // is the current user part of the game?
     return _.contains([this.findPlayerId("black"), this.findPlayerId("white")], this.getUserId());
@@ -273,10 +259,6 @@ var GameShow = ReactMeteor.createClass({
     return  (this.state.chess.turn() == 'b' && this.userColor() == 'white') ||
             (this.state.chess.turn() == 'w' && this.userColor() == 'black');
   },
-  adjustHistoryScroll: function() {
-    var scroll = $('.game-history-content')[0].scrollHeight;
-    $('.game-history-content').scrollTop(scroll);
-  },
   clearIntervals: function() {
     clearInterval(this.blackInterval);
     clearInterval(this.whiteInterval);
@@ -284,15 +266,14 @@ var GameShow = ReactMeteor.createClass({
   blackTick: function() {
     if (this.state.blackTimerSeconds == 0) {
       this.gameOver('white', `Game over, white wins on time`);
-    } else {
+    } else if(! this.state.game.gameOver ) {
       this.setState({ blackTimerSeconds: this.state.blackTimerSeconds-1 });
     }
   },
-
   whiteTick: function() {
     if (this.state.whiteTimerSeconds == 0) {
       this.gameOver('black', `Game over, black wins on time`);
-    } else {
+    } else if(! this.state.game.gameOver ) {
       this.setState({ whiteTimerSeconds: this.state.whiteTimerSeconds-1 });
     }
   },
@@ -300,17 +281,15 @@ var GameShow = ReactMeteor.createClass({
     return this.state.chess.history().length === 1;
   },
   persistMove: function(source, target) { // send move to Mongo
-    var data = {};
-    _.extend(data, {
+    var params = {
+      chess: this.state.chess,
       gameId: this.props._id,
-      move: {source: source, target: target},
       status: this.updateStatus(source, target),
-      fen: this.state.chess.fen(),
-      history: this.state.chess.history(),
-      pgn: this.state.chess.pgn(),
+      move: {source: source, target: target},
       whiteTimer: this.state.whiteTimerSeconds,
       blackTimer: this.state.blackTimerSeconds
-    });
+    };
+    var data = new DataHash(params).render();
     Meteor.call('gameUpdateFen', data, function(error, result) {
       if (error) console.log(error.reason);
     });
@@ -319,13 +298,10 @@ var GameShow = ReactMeteor.createClass({
     var history = this.state.game.history;
     return history.map(function(notation, idx) {
       var number = Math.ceil(idx/2) + 1;
-      var lastMove = "";
-      var last = true;
-      var next = "";
+      var lastMove, next = ""; var last = true;
       if (idx % 2 === 0 && idx + 1 != history.length) {
-        next = history[idx + 1];
+        next = history[idx + 1]; last = false;
         lastMove = idx + 2 === history.length ? "last-move" : "";
-        last = false;
       }
       if (idx % 2 === 0) {
         return (
@@ -334,10 +310,13 @@ var GameShow = ReactMeteor.createClass({
       }
     });
   },
+  getTimer: function(color) {
+    return color == 'white' ? this.state.whiteTimerSeconds : this.state.blackTimerSeconds
+  },
   render: function() {
-    var currentUserTimer = this.userColor() == 'white' ? this.state.whiteTimerSeconds : this.state.blackTimerSeconds;
-    var opponentTimer = this.userColor() == 'white' ? this.state.blackTimerSeconds : this.state.whiteTimerSeconds;
-    var formattedHistory = this.formatHistory();
+    var currentUserTimer  = this.getTimer(this.userColor());
+    var opponentTimer     = this.getTimer(this.getOpponentColor());
+    var formattedHistory  = this.formatHistory();
     var messages = this.state.messages.map(function(msg, idx) {
       return <MessageComponent idx={idx} msg={msg} acceptDraw={this.acceptDraw} acceptUndo={this.acceptUndo}/>;
     }.bind(this));
@@ -358,7 +337,7 @@ var GameShow = ReactMeteor.createClass({
           <div className="game-messages">
             <StatusComponent status={this.state.game.status} />
             <HistoryComponent formattedHistory={formattedHistory}/>
-            <MessagesComponent messages={messages} submitMessage={this.submitMessage} />
+            <MessagesComponent messages={messages} gameId={this.props._id} username={this.getUsername()}/>
           </div>
         </div>
       </div>
