@@ -20,6 +20,8 @@ var GameShow = ReactMeteor.createClass({
     this.joinRoom(); // set up Streamy for messaging
     this.listenForMessages(); // event observer for messages
     this.receiveDrawOffer(); // listen for draw offer
+    this.receiveUndoRequest(); // listen for undo requests
+    this.receiveUndoAcception(); // listen for undo accept
     var cfg = _.extend(CFG, {
       position    : _.last(this.state.game.fen),
       draggable   : this.isPlayer(),
@@ -55,9 +57,8 @@ var GameShow = ReactMeteor.createClass({
       this.gameOver(this.userColor());
     }
   },
-  onDragStart: function(source, piece, position, orientation) {
+  onDragStart: function(source, piece, position, orientation) { // set draggability
     var chess = this.state.chess;
-    // disable draggable if game is over or opponent's turn
     if (chess.game_over() === true ||
       (this.state.game.gameOver === true) ||
       (chess.turn() === 'w' && this.userColor() === 'black' ) ||
@@ -108,12 +109,20 @@ var GameShow = ReactMeteor.createClass({
   resign: function(color) {
     this.gameOver(color, `Game over, ${color} resigns`);
   },
+  acceptDraw: function() {
+    this.clearIntervals(); // stop timers
+    var status = 'Game drawn'
+    data = { status: status, gameId: this.props._id };
+    Meteor.call('gameDrawn', data, function(error, result) {
+      if (error) console.log(error.reason);
+    });
+  },
   receiveDrawOffer: function() {
     Streamy.on('draw_offer', function(data) {
       var message = {from: data.from, submitted: data.submitted};
       if (this.getUserId() == data.message) {
         message.message = data.from + " offers a draw. Do you accept?";
-        message.draw = true
+        message.draw = true;
       } else if (this.getUsername() == data.from) {
         data.from = "Admin ";
         message.message = "Your draw request was successfully sent";
@@ -124,21 +133,61 @@ var GameShow = ReactMeteor.createClass({
       this.setMessageScroll();
     }.bind(this));
   },
+  acceptUndo: function() {
+    this.state.chess.undo();
+    var data = {
+      gameId: this.props._id,
+      status: this.updateStatus(),
+      pgn: this.state.chess.pgn(),
+      history: this.state.chess.history()
+    };
+    console.log("UNDO DATA", data);
+    Meteor.call('gameUndo', data, function(error, result) {
+      if (error) console.log(error.reason);
+    });
+    this.state.board.position(this.state.chess.fen());
+    Streamy.rooms(this.props._id).emit('accept_undo', {
+      from: this.getUsername(), message: this.getOpponentId(), submitted: new Date()
+    });
+  },
+  receiveUndoAcception: function() {
+    Streamy.on('accept_undo', function(data) {
+      if (this.getUserId() == data.message) {
+        this.state.chess.undo();
+        this.state.board.position(this.state.chess.fen());
+      }
+    }.bind(this));
+  },
+  receiveUndoRequest: function() {
+    Streamy.on('undo_request', function(data) {
+      var message = {from : data.from, submitted: data.submitted };
+      if (this.getUserId() == data.message) {
+        message.message = data.from + " wishes to undo a move. Do you accept?";
+        message.undo = true;
+      } else if (this.getUsername() == data.from) {
+        data.from = "Admin";
+        message.message = "Your undo move request was successfully sent";
+      }
+      var messages = this.state.messages;
+      messages.push(message);
+      this.setState({messages: messages});
+      this.setMessageScroll();
+    }.bind(this));
+  },
+  handleUndoRequest: function() {
+    console.log("UNDO REQUEST");
+    if (! this.state.game.gameOver && this.state.chess.turn() != this.currentPlayerTurn()) {
+      Streamy.rooms(this.props._id).emit('undo_request', {
+        from: this.getUsername(), message: this.getOpponentId(), submitted: new Date()
+      });
+    }
+  },
   handleDrawOffer: function() {
     if (! this.state.game.gameOver) {
       Streamy.rooms(this.props._id).emit('draw_offer', {
         from: this.getUsername(), message: this.getOpponentId(), submitted: new Date()
       });
     }
-  },
-  acceptDraw: function() {
-    console.log("Main accept draw");
-    this.clearIntervals(); // stop timers
-    var status = 'Game drawn'
-    data = { status: status, gameId: this.props._id };
-    Meteor.call('gameDrawn', data, function(error, result) {
-      if (error) console.log(error.reason);
-    });
   },
   getMoveData: function() {
     var source = this.state.moves ? this.state.moves.source : "";
@@ -157,6 +206,9 @@ var GameShow = ReactMeteor.createClass({
     if (this.isPlayer()) {
       Streamy.join(this.props._id);
     }
+  },
+  currentPlayerTurn: function() {
+    return this.userColor() == 'black' ? 'b' : 'w';
   },
   setMessageScroll: function() { // scroll to bottom of messages
     var scroll = $('.user-messages-content')[0].scrollHeight;
@@ -283,7 +335,7 @@ var GameShow = ReactMeteor.createClass({
     var opponentTimer = this.userColor() == 'white' ? this.state.blackTimerSeconds : this.state.whiteTimerSeconds;
     var formattedHistory = this.formatHistory();
     var messages = this.state.messages.map(function(msg, idx) {
-      return <MessageComponent idx={idx} msg={msg} acceptDraw={this.acceptDraw} />;
+      return <MessageComponent idx={idx} msg={msg} acceptDraw={this.acceptDraw} acceptUndo={this.acceptUndo}/>;
     }.bind(this));
     return (
       <div id="game-page-wrapper">
@@ -298,7 +350,7 @@ var GameShow = ReactMeteor.createClass({
               <Profile name={this.getBottomPlayerName()} rating={1200} gamesPlayed={4} country={"United States"} />
             </div>
           </div>
-          <BoardComponent handleResign={this.handleResign} handleDrawOffer={this.handleDrawOffer}/>
+          <BoardComponent handleResign={this.handleResign} handleDrawOffer={this.handleDrawOffer} handleUndoRequest={this.handleUndoRequest}/>
           <div className="game-messages">
             <StatusComponent status={this.state.game.status} />
             <HistoryComponent formattedHistory={formattedHistory}/>
