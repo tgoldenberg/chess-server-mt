@@ -89,8 +89,11 @@ var GameShow = ReactMeteor.createClass({
       status += `, ${moveColor} is in check`;
     return status;
   },
-  switchTurn: function() {
-    if (this.isFirstMove()) { // set black interval
+  switchTurn: function(undo) {
+    if (this.isFirstMove() && !undo) { // set black interval
+      this.blackInterval = setInterval(this.blackTick, 1000);
+    } else if ( this.isFirstMove() && undo) {
+      clearInterval(this.whiteTick, 1000);
       this.blackInterval = setInterval(this.blackTick, 1000);
     } else if (! this.isFirstMove() && this.state.chess.turn() === 'w') {
       clearInterval(this.blackInterval);
@@ -141,11 +144,11 @@ var GameShow = ReactMeteor.createClass({
       pgn: this.state.chess.pgn(),
       history: this.state.chess.history()
     };
-    console.log("UNDO DATA", data);
     Meteor.call('gameUndo', data, function(error, result) {
       if (error) console.log(error.reason);
     });
     this.state.board.position(this.state.chess.fen());
+    this.switchTurn(true);
     Streamy.rooms(this.props._id).emit('accept_undo', {
       from: this.getUsername(), message: this.getOpponentId(), submitted: new Date()
     });
@@ -155,6 +158,7 @@ var GameShow = ReactMeteor.createClass({
       if (this.getUserId() == data.message) {
         this.state.chess.undo();
         this.state.board.position(this.state.chess.fen());
+        this.switchTurn(true);
       }
     }.bind(this));
   },
