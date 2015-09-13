@@ -8,6 +8,9 @@ $light-brown: #827f62;
 $real-dark-green: #324E44;
 $darker-brown: #9B9981;
 $dark-red: #8b4441;
+$button-alert: rgb(202, 60, 60);
+$button-success: rgb(28, 184, 65);
+$action-color: #477DCA !default;
 
 #game-page-wrapper {
   height: inherit;
@@ -285,6 +288,23 @@ $dark-red: #8b4441;
       border-radius: 3px;
       .message {
         text-align: left;
+        button {
+          margin-top: 5px;
+          background: $between-green;
+          font-size: .8em;
+          border: none;
+          padding: .5em .2em;
+          color: white;
+          letter-spacing: 1px;
+          font-weight: bold;
+          border-radius: 4px;
+          z-index: 9999;
+          width: 7em;
+        }
+        button:nth-child(2) {
+          background: $button-alert;
+          margin-left: 3px;
+        }
         p {
 
         }

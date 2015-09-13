@@ -19,24 +19,22 @@ var GameShow = ReactMeteor.createClass({
     this.state.chess.load_pgn(Games.findOne(this.props._id).pgn); // load previous games notation
     this.joinRoom(); // set up Streamy for messaging
     this.listenForMessages(); // event observer for messages
-
-    var cfg = CFG;
-    cfg.position    = _.last(this.state.game.fen);
-    cfg.draggable   = this.isPlayer();
-    cfg.orientation = this.userColor();
-    cfg.onDrop      = this.onDrop;
-    cfg.onSnapEnd   = this.onSnapEnd;
-    cfg.onDragStart = this.onDragStart;
+    this.receiveDrawOffer(); // listen for draw offer
+    var cfg = _.extend(CFG, {
+      position    : _.last(this.state.game.fen),
+      draggable   : this.isPlayer(),
+      orientation : this.userColor(),
+      onDrop      : this.onDrop,
+      onSnapEnd   : this.onSnapEnd,
+      onDragStart : this.onDragStart
+    });
     this.setState({board: new ChessBoard('board', cfg)}); // initialize chessboard
   },
   componentDidUpdate: function() {
-    console.log("NEW MOVE", this.needsUpdate());
     this.adjustHistoryScroll(); // show bottom of history
     if (this.needsUpdate()) { // listen for new moves
       var moveAttributes = this.getMoveData()
       var move = this.state.chess.move(moveAttributes);
-      console.log(this.getMoveData());
-      console.log(move);
       if (move) {
         this.updateStatus(moveAttributes.from, moveAttributes.to); // update status message
         this.state.board.position(this.state.chess.fen()); // update board
@@ -105,16 +103,42 @@ var GameShow = ReactMeteor.createClass({
     this.clearIntervals(); // stop timers
     var status = this.state.chess.game_over() ? this.updateStatus() : status;
     data = { status: status, gameId: this.props._id, color: color };
-    Meteor.call('gameOver', data, function(error, result) { // set gameOver to true in Mongo
-      if (error)
-        console.log(error.reason);
-    });
+    Meteor.call('gameOver', data, function(error, result) {});
   },
   resign: function(color) {
     this.gameOver(color, `Game over, ${color} resigns`);
   },
-  handleResign: function(e) {
-    this.resign(this.userColor());
+  receiveDrawOffer: function() {
+    Streamy.on('draw_offer', function(data) {
+      var message = {from: data.from, submitted: data.submitted};
+      if (this.getUserId() == data.message) {
+        message.message = data.from + " offers a draw. Do you accept?";
+        message.draw = true
+      } else if (this.getUsername() == data.from) {
+        data.from = "Admin ";
+        message.message = "Your draw request was successfully sent";
+      }
+      var messages = this.state.messages;
+      messages.push(message);
+      this.setState({messages: messages});
+      this.setMessageScroll();
+    }.bind(this));
+  },
+  handleDrawOffer: function() {
+    if (! this.state.game.gameOver) {
+      Streamy.rooms(this.props._id).emit('draw_offer', {
+        from: this.getUsername(), message: this.getOpponentId(), submitted: new Date()
+      });
+    }
+  },
+  acceptDraw: function() {
+    console.log("Main accept draw");
+    this.clearIntervals(); // stop timers
+    var status = 'Game drawn'
+    data = { status: status, gameId: this.props._id };
+    Meteor.call('gameDrawn', data, function(error, result) {
+      if (error) console.log(error.reason);
+    });
   },
   getMoveData: function() {
     var source = this.state.moves ? this.state.moves.source : "";
@@ -160,6 +184,9 @@ var GameShow = ReactMeteor.createClass({
   },
   isPlayer: function() { // is the current user part of the game?
     return _.contains([this.findPlayerId("black"), this.findPlayerId("white")], this.getUserId());
+  },
+  getOpponentId: function() {
+    return this.userColor() == "white" ? this.state.game.black.userId : this.state.game.white.userId;
   },
   findPlayerId: function(key) { // check if Game has particular color attribute
     return this.props[key] ? this.props[key].userId : null;
@@ -217,19 +244,19 @@ var GameShow = ReactMeteor.createClass({
     return this.state.chess.history().length === 1;
   },
   persistMove: function(source, target) { // send move to Mongo
-    var data = {
-      gameId: this.state.game._id,
+    var data = {};
+    _.extend(data, {
+      gameId: this.props._id,
       move: {source: source, target: target},
-      fen: this.state.chess.fen(),
       status: this.updateStatus(source, target),
+      fen: this.state.chess.fen(),
       history: this.state.chess.history(),
       pgn: this.state.chess.pgn(),
       whiteTimer: this.state.whiteTimerSeconds,
       blackTimer: this.state.blackTimerSeconds
-    };
+    });
     Meteor.call('gameUpdateFen', data, function(error, result) {
-      if (error)
-        console.log(error.reason);
+      if (error) console.log(error.reason);
     });
   },
   formatHistory: function() {
@@ -246,12 +273,7 @@ var GameShow = ReactMeteor.createClass({
       }
       if (idx % 2 === 0) {
         return (
-          <HistoryLineComponent
-            number={number}
-            notation={notation}
-            lastMove={lastMove}
-            last={last}
-            next={next} />
+          <HistoryLineComponent number={number} notation={notation} lastMove={lastMove} last={last} next={next} />
         );
       }
     });
@@ -261,8 +283,8 @@ var GameShow = ReactMeteor.createClass({
     var opponentTimer = this.userColor() == 'white' ? this.state.blackTimerSeconds : this.state.whiteTimerSeconds;
     var formattedHistory = this.formatHistory();
     var messages = this.state.messages.map(function(msg, idx) {
-      return <MessageComponent idx={idx} msg={msg}/>;
-    });
+      return <MessageComponent idx={idx} msg={msg} acceptDraw={this.acceptDraw} />;
+    }.bind(this));
     return (
       <div id="game-page-wrapper">
         <div className="game-wrapper">
@@ -276,7 +298,7 @@ var GameShow = ReactMeteor.createClass({
               <Profile name={this.getBottomPlayerName()} rating={1200} gamesPlayed={4} country={"United States"} />
             </div>
           </div>
-          <BoardComponent handleResign={this.handleResign}/>
+          <BoardComponent handleResign={this.handleResign} handleDrawOffer={this.handleDrawOffer}/>
           <div className="game-messages">
             <StatusComponent status={this.state.game.status} />
             <HistoryComponent formattedHistory={formattedHistory}/>
