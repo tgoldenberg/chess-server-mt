@@ -1,0 +1,37 @@
+$primary-font: "OpenSans", Helvetica, Arial, sans-serif;
+$secondary-font: "OpenSansLight", "Helvetica Neue", Arial, sans-serif;
+$light-grey: #e4e4e4;
+$aqua-green: #78baa1;
+$between-green: #609581;
+$dark-green: #548271;
+$light-brown: #827f62;
+$real-dark-green: #324E44;
+$darker-brown: #9B9981;
+$dark-red: #8b4441;
+$button-alert: rgb(202, 60, 60);
+$button-success: rgb(28, 184, 65);
+$action-color: #477DCA !default;
+.board-holder {
+  #controls {
+    padding-top: 13px;
+    button {
+      color: white;
+      background: $action-color;
+      border: none;
+      border-right: 1px solid white;
+      font-size: 1.5em;
+      padding: .5em .4em;
+      font-weight: bold;
+      width: 15.35%;
+      border-radius: 1px;
+    }
+    button:nth-child(1) {
+      border-top-left-radius: 2px;
+      border-bottom-left-radius: 2px;
+    }
+    button:nth-last-child(1) {
+      border-top-right-radius: 2px;
+      border-bottom-right-radius: 2px;
+    }
+  }
+}

@@ -247,6 +247,10 @@ $action-color: #477DCA !default;
       height: 150px;
       overflow-y: auto;
     }
+    .game-history-analyze {
+      height: 400px;
+      overflow-y: auto;
+    }
   }
   .history-line {
     display: flex;

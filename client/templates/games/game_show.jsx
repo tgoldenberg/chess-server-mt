@@ -40,13 +40,15 @@ var GameShow = ReactMeteor.createClass({
       SetScroll($('.game-history-content')); // show bottom of history
       var moveAttributes = this.getMoveData();
       var move = this.state.chess.move(moveAttributes);
+      var self = this;
       if (move) {
-        this.updateStatus(moveAttributes.from, moveAttributes.to); // update status message
-        this.state.board.position(this.state.chess.fen()); // update board
-        this.switchTurn(); // change timer
-      }
-      if (this.state.chess.game_over()) {
-        this.gameOverNotification();
+        if (self.state.game.gameOver) {
+          self.gameOverNotification();
+        }
+        self.updateStatus(moveAttributes.from, moveAttributes.to); // update status message
+        self.state.board.position(self.state.chess.fen()); // update board
+        self.switchTurn(); // change timer
+        resolve(self.state.chess.game_over());
       }
     }
   },
@@ -296,6 +298,7 @@ var GameShow = ReactMeteor.createClass({
     return color == 'white' ? this.state.whiteTimerSeconds : this.state.blackTimerSeconds
   },
   render: function() {
+    var content;
     var self = this;
     var currentUserTimer  = this.getTimer(this.props.userColor());
     var opponentTimer     = this.getTimer(this.props.getOpponentColor());
@@ -312,27 +315,30 @@ var GameShow = ReactMeteor.createClass({
         username={self.props.getUsername()}
         />;
     });
+    content = <div className="game-wrapper">
+                <div className="player-info">
+                  <div className="other-player">
+                    <Timer name={this.getOpponent().name} time={opponentTimer} />
+                    <Profile name={this.getOpponent().name} rating={1200} gamesPlayed={4} country={"United States"}/>
+                  </div>
+                  <div className="current-player">
+                    <Timer name={this.props.getUsername()} time={currentUserTimer} />
+                    <Profile name={this.props.getBottomPlayerName()} rating={1200} gamesPlayed={4} country={"United States"} />
+                  </div>
+                </div>
+                <BoardComponent handleResign={this.handleResign} handleDrawOffer={this.handleDrawOffer} analyzeGame={false} handleUndoRequest={this.handleUndoRequest}/>
+                <div className="game-messages">
+                  <StatusComponent status={this.state.game.status} />
+                  <HistoryComponent formattedHistory={formattedHistory} analyzeGame={false}/>
+                  <MessagesComponent messages={messages} gameId={this.props.game._id} username={this.props.getUsername()}/>
+                </div>
+              </div>;
+    if (this.state.game.gameOver) {
+      content = <AnalyzeGameComponent game={this.state.game} />
+    }
     return (
       <div id="game-page-wrapper">
-        <div className="game-wrapper">
-          <div className="player-info">
-            <div className="other-player">
-              <Timer name={this.getOpponent().name} time={opponentTimer} />
-              <Profile name={this.getOpponent().name} rating={1200} gamesPlayed={4} country={"United States"}/>
-            </div>
-            <div className="current-player">
-              <Timer name={this.props.getUsername()} time={currentUserTimer} />
-              <Profile name={this.props.getBottomPlayerName()} rating={1200} gamesPlayed={4} country={"United States"} />
-            </div>
-          </div>
-          <BoardComponent handleResign={this.handleResign} handleDrawOffer={this.handleDrawOffer} handleUndoRequest={this.handleUndoRequest}/>
-          <div className="game-messages">
-            <StatusComponent status={this.state.game.status} />
-            <HistoryComponent formattedHistory={formattedHistory}/>
-            <MessagesComponent messages={messages} gameId={this.props.game._id} username={this.props.getUsername()}/>
-          </div>
-        </div>
-
+        {content}
       </div>
     );
   }
