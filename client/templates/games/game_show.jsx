@@ -16,7 +16,6 @@ var GameShow = ReactMeteor.createClass({
     }
   },
   componentDidMount: function() {
-
     this.state.chess.load_pgn(Games.findOne(this.props.game._id).pgn); // load previous games notation
     this.joinRoom(); // set up Streamy for messaging
     this.listenForMessages(); // event observer for messages
@@ -46,6 +45,9 @@ var GameShow = ReactMeteor.createClass({
         this.state.board.position(this.state.chess.fen()); // update board
         this.switchTurn(); // change timer
       }
+      if (this.state.chess.game_over()) {
+        this.gameOverNotification();
+      }
     }
   },
   componentWillUnmount: function() {
@@ -54,9 +56,6 @@ var GameShow = ReactMeteor.createClass({
   },
   onDropCallback: function(source, target) {
     this.switchTurn(); // change timer
-      $('#myModal').modal('show');
-      FB.XFBML.parse(document.getElementById('facebook_share'));
-      TwitterShare();
     this.persistMove(source, target); // send move to Mongo
     if (this.state.chess.game_over()) { // check for game over
       this.gameOver(this.props.userColor());
@@ -112,12 +111,33 @@ var GameShow = ReactMeteor.createClass({
       return this.state.game.black ? this.state.game.black : {name: "N/A"};
     }
   },
+  gameOverNotification: function() {
+    function showModal() {
+      $('#myModal').modal('show');
+      FB.XFBML.parse(document.getElementById('facebook_share'));
+      TwitterShare();
+    }
+    setTimeout(showModal, 1000);
+  },
   gameOver: function(color, status) {
     this.clearIntervals(); // stop timers
-    var status = this.state.chess.game_over() ? this.updateStatus() : status;
-    data = { status: status, gameId: this.props.game._id, color: color };
-    Meteor.call('gameOver', data, function(error, result) {
-      if (error) console.log(error.reason);
+    var self = this;
+    var p1 = new Promise(function(resolve, reject) {
+      var status = self.state.chess.game_over() ? self.updateStatus() : status;
+      data = { status: status, gameId: self.props.game._id, color: color };
+      Meteor.call('gameOver', data, function(error, result) {
+        if (error) console.log(error.reason);
+        else
+          resolve();
+      });
+    })
+    p1.then(function(result) {
+      function showModal() {
+        $('#myModal').modal('show');
+        FB.XFBML.parse(document.getElementById('facebook_share'));
+        TwitterShare();
+      }
+      setTimeout(showModal, 1000);
     });
   },
   resign: function(color) {
