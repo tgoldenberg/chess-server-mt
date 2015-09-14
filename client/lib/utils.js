@@ -2,6 +2,22 @@ SetScroll =  function(domElement) {
   domElement.scrollTop(domElement[0].scrollHeight);
 };
 
+FormatHistory = function(history) {
+  var result = history.map(function(notation, idx) {
+    var number = Math.ceil(idx/2) + 1;
+    var lastMove = ""; var next = ""; var last = true;
+    if (idx % 2 === 0 && idx + 1 != history.length) {
+      next = history[idx + 1]; last = false;
+      lastMove = idx + 2 === history.length ? "last-move" : "";
+      return {number: number, notation: notation, lastMove: lastMove, last: last, next: next};
+    }
+    if (idx % 2 === 0) {
+      return {number: number, notation: notation, lastMove: lastMove, last: last, next: next};
+    }
+  });
+  return result;
+};
+
 CFG = function(data, callback) {
   this.pieceTheme = '/{piece}.png';
   this.snapSpeed = 100;
@@ -29,14 +45,47 @@ CFG.prototype = {
   }
 }
 Streams = {
-  drawOffer: function(data, messages, setState, userId, username) {
+  drawOffer: function(data, params) {
     var message = {from: data.from, submitted: data.submitted};
-    if (userId == data.message) {
+    if (params.userId == data.message) {
       message.message = Statuses.offerDraw(data.from); message.draw = true;
-    } else if (username == data.from) {
+    } else if (params.username == data.from) {
       data.from = "Admin "; message.message = Statuses.messageSent();
     }
-    var newMessages = messages;
+    var newMessages = params.messages;
+    newMessages.push(message);
+    return newMessages;
+  },
+  undoRequest: function(data, params) {
+    var message = {from: data.from, submitted: data.submitted};
+    if (params.userId == data.message) {
+      message.message = Statuses.undoRequest(data.from); message.undo = true;
+    } else if (params.username == data.from) {
+      data.from = "Admin"; message.message = Statuses.undoSent();
+    }
+    var newMessages = params.messages;
+    newMessages.push(message);
+    return newMessages;
+  },
+  undoDecline: function(data, params) {
+    var message = {from: data.from, submitted: data.submitted };
+    if (params.userId == data.message) {
+      message.message = Statuses.undoDecline(data.from);
+    } else if (params.username == data.from) {
+      data.from = "Admin"; message.message = Statuses.undoDeclineSent();
+    }
+    var newMessages = params.messages;
+    newMessages.push(message);
+    return newMessages;
+  },
+  drawDecline: function(data, params) {
+    var message = {from: data.from, submitted: data.submitted };
+    if (params.userId == data.message) {
+      message.message = Statuses.drawDecline(data.from);
+    } else if (params.username == data.from) {
+      data.from = "Admin"; message.message = Statuses.drawDeclineSent();
+    }
+    var newMessages = params.messages;
     newMessages.push(message);
     return newMessages;
   }
