@@ -1,4 +1,40 @@
 <template name="game">
   {{> navbar }}
   {{> gameShow dataHash }}
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title" id="myModalLabel"><i class="glyphicon glyphicon-ok"></i> Congratulations!</h4>
+        </div>
+        <div class="modal-body">
+          <h2 class="game-result-title">Game Results</h2>
+          <p class="game-result">White Wins in 20 moves</p>
+          <div class="game-options">
+            <a class="end-game-buttons" href="#"><button>Analyze Game</button></a>
+            <a class="end-game-buttons" href="#" id="new_game"><button>New Game</button></a>
+            <a class="end-game-buttons" href="/"><button>Home</button></a>
+          </div>
+          <p>Share your progress with friends!</p>
+        </div>
+        <div class="modal-footer">
+          <div class="social-share">
+            <a onclick="return !window.open(this.href, 'Share on Facebook', 'width=640, height=536')" href="https://www.facebook.com/sharer/sharer.php?u=href=https://speakitlanguages.com&display=popup&ref=plugin" target="_window">
+              <i class="fa fa-facebook"> Share</i>
+            </a>
+            <a
+              data-count="none"
+              href="https://twitter.com/intent/tweet?text=Hello%20world"
+              data-size="large">
+              <i class="fa fa-twitter"> Tweet</i>
+            </a>
+          </div>
+          <div class="close-button">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>

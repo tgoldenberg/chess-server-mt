@@ -174,18 +174,19 @@ var Splash = ReactMeteor.createClass({
 							<label htmlFor="username">What's your name?</label><br/>
 							<input type="text" name="username" autofocus/>
 						</form><br/>
-							<p className="fb-invite">Invite your friends to a game through Faceboook or Twitter!</p>
+						<p className="fb-invite">Invite your friends to a game through Faceboook or Twitter!</p>
 						<div className="social-share">
 							<div className="fb-share-button"
-					         data-href="http://www.your-domain.com/your-page.html"
-									 data-type="button"
-					         data-layout="button">
-					     </div>
-								<a className="twitter-share-button"
-									data-count="none"
-								  href="https://twitter.com/intent/tweet?text=Hello%20world"
-								  data-size="large">
-								Tweet</a>
+				         data-href="http://www.your-domain.com/your-page.html"
+								 data-type="button"
+				         data-layout="button">
+					    </div>
+							<a className="twitter-share-button"
+								data-count="none"
+							  href="https://twitter.com/intent/tweet?text=Hello%20world"
+							  data-size="large">
+								Tweet
+							</a>
 						</div>
 					</div>
 				</div>

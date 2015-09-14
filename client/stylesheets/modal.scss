@@ -1,0 +1,92 @@
+$primary-font: "OpenSans", Helvetica, Arial, sans-serif;
+$secondary-font: "OpenSansLight", "Helvetica Neue", Arial, sans-serif;
+$light-grey: #e4e4e4;
+$aqua-green: #78baa1;
+$between-green: #609581;
+$dark-green: #548271;
+$light-brown: #827f62;
+$real-dark-green: #324E44;
+$darker-brown: #9B9981;
+$dark-red: #8b4441;
+$button-alert: rgb(202, 60, 60);
+$button-success: rgb(28, 184, 65);
+$action-color: #477DCA !default;
+
+#myModal {
+  i.fa.fa-twitter, i.fa.fa-facebook {
+    color: white;
+    border-radius: 4px;
+    padding: .5em .8em;
+  }
+  i.fa.fa-facebook {
+    background: #3B5998;
+  }
+  i.fa.fa-twitter {
+    background: #00aced;
+    margin-left: .5em;
+  }
+  .modal-dialog {
+    .modal-content {
+      .modal-header {
+        background: $dark-green;
+        color: white;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        button {
+          right: 12px;
+          position: fixed;
+          border: none;
+          background: transparent;
+          font-weight: bold;
+          color: #b4b4b4;
+        }
+        .modal-title {
+
+        }
+
+      }
+      .modal-body {
+        .game-result-title {
+          font-size: 1.5em;
+          width: 30%;
+          margin-bottom: .3em;
+          border-bottom: 1px solid #d6d6d6;
+          padding-bottom: .2em;
+        }
+        .game-result {
+        }
+        .game-options {
+          padding-top: .5em;
+          margin-bottom: .5em;
+          button:nth-child(1) {
+            margin-left: 10px;
+          }
+          button {
+            width: 30%;
+            padding: .5em .8em;
+            background: $action-color;
+            color: white;
+            border: none;
+            border-radius: 3px;
+          }
+        }
+      }
+      .modal-footer {
+        .social-share {
+          float: left;
+        }
+        .close-button {
+          float: right;
+          button {
+            background: transparent;
+            border: 1px solid #e6e6e6;
+            border-radius: 4px;
+            color: #777;
+            padding: .2em .8em;
+          }
+        }
+
+      }
+    }
+  }
+}

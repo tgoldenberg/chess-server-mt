@@ -16,6 +16,7 @@ var GameShow = ReactMeteor.createClass({
     }
   },
   componentDidMount: function() {
+
     this.state.chess.load_pgn(Games.findOne(this.props.game._id).pgn); // load previous games notation
     this.joinRoom(); // set up Streamy for messaging
     this.listenForMessages(); // event observer for messages
@@ -53,6 +54,9 @@ var GameShow = ReactMeteor.createClass({
   },
   onDropCallback: function(source, target) {
     this.switchTurn(); // change timer
+      $('#myModal').modal('show');
+      FB.XFBML.parse(document.getElementById('facebook_share'));
+      TwitterShare();
     this.persistMove(source, target); // send move to Mongo
     if (this.state.chess.game_over()) { // check for game over
       this.gameOver(this.props.userColor());
@@ -100,6 +104,13 @@ var GameShow = ReactMeteor.createClass({
     clearInterval(this[prev]);
     this[interval] = setInterval(this[next], 1000);
     return;
+  },
+  getOpponent: function() {
+    if (this.props.isPlayer() && this.props.userColor() == "black") {
+      return this.state.game.white ? this.state.game.white : {name: "N/a"};
+    } else {
+      return this.state.game.black ? this.state.game.black : {name: "N/A"};
+    }
   },
   gameOver: function(color, status) {
     this.clearIntervals(); // stop timers
@@ -251,8 +262,9 @@ var GameShow = ReactMeteor.createClass({
   },
   formatHistory: function() {
     var history = FormatHistory(this.state.game.history);
-    return _.compact(history).map(function(data) {
+    return _.compact(history).map(function(data, idx) {
       return <HistoryLineComponent
+                key={idx}
                 number={data.number}
                 notation={data.notation}
                 lastMove={data.lastMove}
@@ -272,6 +284,7 @@ var GameShow = ReactMeteor.createClass({
       return <MessageComponent
         idx={idx}
         msg={msg}
+        key={idx}
         acceptDraw={self.acceptDraw}
         acceptUndo={self.acceptUndo}
         gameId={self.props.game._id}
@@ -284,8 +297,8 @@ var GameShow = ReactMeteor.createClass({
         <div className="game-wrapper">
           <div className="player-info">
             <div className="other-player">
-              <Timer name={this.props.getOpponentName()} time={opponentTimer} />
-              <Profile name={this.props.getOpponentName()} rating={1200} gamesPlayed={4} country={"United States"}/>
+              <Timer name={this.getOpponent().name} time={opponentTimer} />
+              <Profile name={this.getOpponent().name} rating={1200} gamesPlayed={4} country={"United States"}/>
             </div>
             <div className="current-player">
               <Timer name={this.props.getUsername()} time={currentUserTimer} />
@@ -299,6 +312,7 @@ var GameShow = ReactMeteor.createClass({
             <MessagesComponent messages={messages} gameId={this.props.game._id} username={this.props.getUsername()}/>
           </div>
         </div>
+
       </div>
     );
   }
