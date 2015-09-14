@@ -129,7 +129,20 @@ var Splash = ReactMeteor.createClass({
     Session.set('currentUser', name);
 		Session.set('userId', makeid());
   },
+	facebookShare: function(e) {
+	},
 	render: function() {
+		var fbGraph = "https://www.facebook.com/dialog/share_open_graph?" +
+		  "app_id=145634995501895" +
+		  "&display=popup" +
+		  "&action_type=og.likes" +
+		  "&action_properties=%7B%22object%22%3A%22https%3A%2F%2Fdevelopers.facebook.com%2Fdocs%2F%22%7D" +
+		  "&redirect_uri=https%3A%2F%2Fdevelopers.facebook.com%2Ftools%2Fexplorer";
+		var twitterURL = "http://platform.twitter.com/widgets/tweet_button.1362636220.html#_=1363023601135&" +
+			"count=none&amp;id=twitter-widget-0&" +
+			"lang=en&amp;original_referer=http://localhost:3000&" +
+			"text=Check out Speakit!&" +
+			"url=http://localhost:3000&size=m";
 		var averageWait = 0;
 		if (this.state.recentGames.count() > 0 ) {
 			var timeDiff = 0;
@@ -154,14 +167,27 @@ var Splash = ReactMeteor.createClass({
             <p><a href="#">Leaderboard</a></p>
             <p><a href="#">View Games in Progress</a></p>
 					</div>
-				<div className="form-info">
-					<h1>ChessMentor</h1><br/><br/>
-					<button onClick={this.toggleForm}>PLAY</button>
-					<form onSubmit={this.submitForm} id="new-game" className="hidden animated fadeIn">
-						<label htmlFor="username">What's your name?</label><br/>
-						<input type="text" name="username" autofocus/>
-					</form>
-				</div>
+					<div className="form-info">
+						<h1>ChessMentor</h1><br/><br/>
+						<button onClick={this.toggleForm}>PLAY</button>
+						<form onSubmit={this.submitForm} id="new-game" className="hidden animated fadeIn">
+							<label htmlFor="username">What's your name?</label><br/>
+							<input type="text" name="username" autofocus/>
+						</form><br/>
+							<p className="fb-invite">Invite your friends to a game through Faceboook or Twitter!</p>
+						<div className="social-share">
+							<div className="fb-share-button"
+					         data-href="http://www.your-domain.com/your-page.html"
+									 data-type="button"
+					         data-layout="button">
+					     </div>
+								<a className="twitter-share-button"
+									data-count="none"
+								  href="https://twitter.com/intent/tweet?text=Hello%20world"
+								  data-size="large">
+								Tweet</a>
+						</div>
+					</div>
 				</div>
 			</div>
 		)

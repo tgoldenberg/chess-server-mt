@@ -1,3 +1,7 @@
+TwitterSDK = function() {
+  
+}
+
 SetScroll =  function(domElement) {
   domElement.scrollTop(domElement[0].scrollHeight);
 };

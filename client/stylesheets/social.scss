@@ -1,0 +1,73 @@
+@import url(http://fonts.googleapis.com/css?family=Pacifico);
+$landing-font: 'Pacifico', cursive;
+.social-share {
+  display: flex;
+  text-align: center;
+  margin :auto;
+  align-items: center;
+  justify-content: center;
+}
+.fb-invite {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  font-size: 1.4em;
+  font-weight: 300;
+  font-family: $landing-font;
+}
+.twitter-share-button {
+  width: 80px;
+  height: 20px;
+  z-index: 0;
+}
+.fb-share-button{
+transform: scale(1.5);
+-ms-transform: scale(1.5);
+-webkit-transform: scale(1.5);
+-o-transform: scale(1.5);
+-moz-transform: scale(1.5);
+transform-origin: top left;
+-ms-transform-origin: top left;
+-webkit-transform-origin: top left;
+-moz-transform-origin: top left;
+-webkit-transform-origin: top left;
+margin-top: -9px;
+margin-right: 36px;
+z-index: 0;
+}
+
+.btn.btn-facebook {
+  border-radius: 4px;
+  color: #FFFFFF;
+  background: #3B5998;
+  font-size: 3em;
+  padding-left: .4em;
+  padding-right: .2em;
+  padding-top: .1em;
+}
+.btn.btn-facebook:hover,
+.btn.btn-facebook:focus {
+  color: #FFFFFF;
+}
+.btn.btn-twitter {
+  font-size: 3em;
+  padding-top: .1em;
+  padding-left: .1em;
+  padding-right: .1em;
+  border-radius: 4px;
+  color: #FFFFFF;
+  background: #4099FF;
+  margin-left: .3em;
+}
+.btn.btn-twitter:hover,
+.btn.btn-twitter:focus {
+  color: #FFFFFF;
+}
+.btn.btn-google-plus {
+  border-radius: 4px;
+  color: #FFFFFF;
+  background: #D34836;
+}
+.btn.btn-google-plus:hover,
+.btn.btn-google-plus:focus {
+  color: #FFFFFF;
+}
