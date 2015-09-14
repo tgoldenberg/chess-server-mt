@@ -33,7 +33,9 @@ var GameShow = ReactMeteor.createClass({
       onDragStart : this.onDragStart,
       onSnapEnd   : this.onSnapEnd
     });
-    this.setState({board: new ChessBoard('board', config)}); // initialize chessboard
+    if (! this.state.game.gameOver) {
+      this.setState({board: new ChessBoard('board', config)}); // initialize chessboard
+    }
   },
   componentDidUpdate: function() {
     if (this.needsUpdate()) { // listen for new moves
@@ -42,13 +44,13 @@ var GameShow = ReactMeteor.createClass({
       var move = this.state.chess.move(moveAttributes);
       var self = this;
       if (move) {
-        if (self.state.game.gameOver) {
-          self.gameOverNotification();
+        if (this.state.chess.game_over()) {
+          this.gameOverNotification();
         }
         self.updateStatus(moveAttributes.from, moveAttributes.to); // update status message
         self.state.board.position(self.state.chess.fen()); // update board
         self.switchTurn(); // change timer
-        resolve(self.state.chess.game_over());
+
       }
     }
   },
@@ -334,7 +336,7 @@ var GameShow = ReactMeteor.createClass({
                 </div>
               </div>;
     if (this.state.game.gameOver) {
-      content = <AnalyzeGameComponent game={this.state.game} />
+      content = <AnalyzeGameComponent game={this.state.game} chess={this.state.chess} board={this.state.board} />
     }
     return (
       <div id="game-page-wrapper">
