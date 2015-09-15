@@ -32,8 +32,10 @@ AnalyzeGameComponent = ReactMeteor.createClass({
     var moveColor = chess.turn() === 'b' ? 'Black' : 'White';
     if (chess.in_checkmate() === true) { // checkmate?
       status = Statuses.gameOver(moveColor);
-    } else if (chess.in_draw() === true) { // draw?
+    } else if (chess.in_draw() === true || (chess.history().length == this.props.game.moves.length && this.props.game.draw == true)) { // draw?
       status = Statuses.draw();
+    } else if (this.props.game.moves.length == this.props.chess.history().length && this.props.game.gameOver == true) {
+      status = this.props.game.status;
     } else { // regular play?
       status = Statuses.inPlay(moveColor);
     }
@@ -131,11 +133,11 @@ AnalyzeGameComponent = ReactMeteor.createClass({
         <div className="player-info">
           <div className="other-player">
             <Timer name={black.name} time={0} />
-            <Profile name={black.name} rating={black.rating} gamesPlayed={black.gamesPlayed} country={black.country}/>
+            <Profile user={black}/>
           </div>
           <div className="current-player">
             <Timer name={white.name} time={0} />
-            <Profile name={white.name} rating={1200} gamesPlayed={4} country={"United States"} />
+            <Profile user={white} />
           </div>
         </div>
         <BoardComponent handleClick={this.handleClick} handleResign={this.randomFunction} analyzeGame={true} handleDrawOffer={this.randomFunction} handleUndoRequest={this.randomFunction}/>

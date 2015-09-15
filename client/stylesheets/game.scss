@@ -233,7 +233,7 @@ body {
         width: 96%;
         margin-left: 10px;
         font-size: 1em;
-        padding-top: 12px;
+        padding-top: 5px;
       }
     }
     .game-status, .game-history, .user-messages {
@@ -262,10 +262,14 @@ body {
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
     }
-    .game-history, .game-history .glyphicon {
+    .user-messages, .user-messages .glyphicon {
       border-radius: 0;
     }
-    .user-messages, .user-messages .glyphicon {
+    .history-separator {
+      height: 5px;
+      background: #e6e6e6;
+    }
+    .game-history, .game-history .glyphicon {
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
     }

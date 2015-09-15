@@ -2,7 +2,6 @@ Template.game.onRendered(function() {
   Streamy.onConnect(function() {
     Meteor.subscribe('rooms', Streamy.id());
   });
-  FacebookShare();
 });
 
 Template.game.events({
@@ -107,6 +106,16 @@ Template.game.events({
 });
 
 Template.game.helpers({
+  gameResult: function() {
+    var game = Games.findOne(this._id);
+    var historyLength = game.history.length;
+    if (game.draw == true) {
+      return "Drawn game";
+    } else if (game.winner != "") {
+      var color = game.winner._id == game.black._id ? "Black" : "White";
+      return color + " wins in " + historyLength + " moves"
+    }
+  },
   dataHash: function() {
     var game = Games.findOne(this._id);
     var id = this._id
@@ -154,6 +163,24 @@ Template.game.helpers({
         return game.white ? game.white.name : "N/A";
       }
     };
+    function getBottomPlayer() {
+      if (isPlayer()) {
+        if (game.white) {
+          return Meteor.userId() == game.white._id ? game.black : game.white;
+        }
+      } else {
+        return game.white ? game.white : {profile: {name: "N/A", rating: "N/A", country: "N/A"}};
+      }
+    };
+    function getTopPlayer() {
+      if (isPlayer()) {
+        if (game.white) {
+          return game.white != null ? game.white : {name: "N/A", rating: "N/A", country: "N/A"};
+        }
+      } else {
+        return game.black != null ? game.black : {profile: {name: "N/A", rating: "N/A", country: "N/A"}};
+      }
+    };
     return {
       game: Games.findOne(this._id),
       userColor: userColor,
@@ -168,7 +195,9 @@ Template.game.helpers({
       getUserId: getUserId,
       getUsername: getUsername,
       getOpponentName: getOpponentName,
-      getBottomPlayerName: getBottomPlayerName
+      getBottomPlayerName: getBottomPlayerName,
+      getBottomPlayer: getBottomPlayer,
+      getTopPlayer: getTopPlayer
     };
   }
 });

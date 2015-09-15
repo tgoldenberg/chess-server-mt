@@ -1,15 +1,16 @@
 Profile = ReactMeteor.createClass({
   render: function() {
+    var user = this.props.user;
     return (
     <div className="profile">
       <div className="profile-header">
         <span className="glyphicon glyphicon-user"></span>
-        <p>{this.props.name}</p>
+        <p>{user.name}</p>
       </div>
       <div className="profile-content">
-        <p>Rating: {this.props.rating}</p>
-        <p>Games Played: {this.props.gamesPlayed}</p>
-        <p>Country: {this.props.country}</p>
+        <p>Rating: {user.rating}</p>
+        <p>Games Played: {user.gamesPlayed}</p>
+        <p>Country: {user.country} </p>
       </div>
     </div>
     )

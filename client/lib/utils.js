@@ -134,7 +134,7 @@ Statuses = {
     return moveColor + " to move";
   },
   inCheck: function(moveColor) {
-    return moveColor + " is in check";
+    return ", " + moveColor + " is in check";
   },
   messageSent: function() {
     return "Your draw request was successfully sent";

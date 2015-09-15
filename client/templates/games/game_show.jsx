@@ -24,6 +24,8 @@ var GameShow = ReactMeteor.createClass({
     this.receiveUndoAcception(); // listen for undo accept
     this.receiveUndoDecline(); // listen to decline of undo requests
     this.receiveDrawDecline(); // listen to decline of draw requests
+    this.receiveDrawAcception();
+    this.receiveResignation();
     var data = {chess: this.state.chess};
     var config = new CFG(data, this.onDropCallback).render();
     var config = _.extend(config, {
@@ -127,8 +129,8 @@ var GameShow = ReactMeteor.createClass({
     this.clearIntervals(); // stop timers
     var self = this;
     var p1 = new Promise(function(resolve, reject) {
-      var status = self.state.chess.game_over() ? self.updateStatus() : status;
-      data = { status: status, gameId: self.props.game._id, color: color };
+      var gameStatus = self.state.chess.game_over() ? self.updateStatus() : status;
+      data = { status: gameStatus, gameId: self.props.game._id, color: color };
       Meteor.call('gameOver', data, function(error, result) {
         if (error) console.log(error.reason);
         else
@@ -144,8 +146,14 @@ var GameShow = ReactMeteor.createClass({
       setTimeout(showModal, 1000);
     });
   },
-  resign: function(color) {
-    this.gameOver(color, `Game over, ${color} resigns`);
+  resign: function() {
+    this.clearIntervals(); // stop timers
+    var status = "Game over, " + this.props.userColor() + " resigns";
+    data = { status: status, gameId: this.props.game._id, color: this.props.userColor() };
+    Meteor.call('gameOver', data, function(error, result) {
+      if (error) console.log(error.reason);
+    });
+    this.emitMessage('resigns');
   },
   acceptDraw: function() {
     this.clearIntervals(); // stop timers
@@ -154,6 +162,8 @@ var GameShow = ReactMeteor.createClass({
     Meteor.call('gameDrawn', data, function(error, result) {
       if (error) console.log(error.reason);
     });
+    this.gameOverNotification();
+    this.emitMessage('accept_draw');
   },
   messageUpdate: function(stream, callback) {
     var self = this;
@@ -179,6 +189,18 @@ var GameShow = ReactMeteor.createClass({
   },
   receiveDrawDecline: function() {
     this.messageUpdate('decline_draw', Streams.drawDecline);
+  },
+  receiveDrawAcception: function() {
+    var self = this;
+    Streamy.on('accept_draw', function(data) {
+      self.gameOverNotification();
+    });
+  },
+  receiveResignation: function() {
+    var self = this;
+    Streamy.on('resigns', function(data) {
+      self.gameOverNotification();
+    })
   },
   receiveUndoAcception: function() {
     var self = this;
@@ -260,7 +282,8 @@ var GameShow = ReactMeteor.createClass({
   },
   tick: function(color, opposite, timer) {
     if (this.state[timer] == 0) {
-      this.gameOver(color, `Game over, ${opposite} wins on timer`);
+      var status = "Game over, " + opposite + " wins on time";
+      this.gameOver(color, status);
     } else if (! this.state.game.gameOver) {
       var newState = {};
       newState[timer] = this.state[timer] - 1;
@@ -305,6 +328,8 @@ var GameShow = ReactMeteor.createClass({
     var currentUserTimer  = this.getTimer(this.props.userColor());
     var opponentTimer     = this.getTimer(this.props.getOpponentColor());
     var formattedHistory  = this.formatHistory();
+    var bottomPlayer = this.props.getBottomPlayer() || {name: "", rating: "", country: ""}; 
+    var topPlayer = this.props.getTopPlayer() || {name: "", rating: "", country: ""};
     var messages = this.state.messages.map(function(msg, idx) {
       return <MessageComponent
         idx={idx}
@@ -321,18 +346,18 @@ var GameShow = ReactMeteor.createClass({
                 <div className="player-info">
                   <div className="other-player">
                     <Timer name={this.getOpponent().name} time={opponentTimer} />
-                    <Profile name={this.getOpponent().name} rating={1200} gamesPlayed={4} country={"United States"}/>
+                    <Profile user={topPlayer} />
                   </div>
                   <div className="current-player">
                     <Timer name={this.props.getUsername()} time={currentUserTimer} />
-                    <Profile name={this.props.getBottomPlayerName()} rating={1200} gamesPlayed={4} country={"United States"} />
+                    <Profile user={bottomPlayer} />
                   </div>
                 </div>
-                <BoardComponent handleResign={this.handleResign} handleDrawOffer={this.handleDrawOffer} analyzeGame={false} handleUndoRequest={this.handleUndoRequest}/>
+                <BoardComponent handleResign={this.resign} handleDrawOffer={this.handleDrawOffer} analyzeGame={false} handleUndoRequest={this.handleUndoRequest}/>
                 <div className="game-messages">
                   <StatusComponent status={this.state.game.status} />
-                  <HistoryComponent formattedHistory={formattedHistory} analyzeGame={false}/>
                   <MessagesComponent messages={messages} gameId={this.props.game._id} username={this.props.getUsername()}/>
+                  <HistoryComponent formattedHistory={formattedHistory} analyzeGame={false}/>
                 </div>
               </div>;
     if (this.state.game.gameOver) {

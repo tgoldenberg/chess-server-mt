@@ -8,6 +8,7 @@ HistoryComponent = ReactMeteor.createClass({
     }
     return (
       <div>
+        <p className="history-separator"></p>
         <p className="game-history">
           <span className="glyphicon glyphicon-th-list"></span>
           <span>History</span>

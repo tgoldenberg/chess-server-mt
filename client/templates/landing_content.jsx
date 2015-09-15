@@ -161,7 +161,7 @@ var Splash = ReactMeteor.createClass({
             <p><a href="#">View Games in Progress</a></p>
 					</div>
 					<div className="form-info">
-						<h1>ChessMentor</h1><br/><br/>
+						<h1>ChessMentor</h1>
 						<button onClick={this.toggleForm}>PLAY</button>
 						<form onSubmit={this.submitForm} id="new-game" className="hidden animated fadeIn">
 							<label htmlFor="username">What's your name?</label><br/>
