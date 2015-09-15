@@ -13,6 +13,14 @@ TwitterShare = function() {
 SetScroll =  function(domElement) {
   domElement.scrollTop(domElement[0].scrollHeight);
 };
+MakeId = function() {
+  // function to create a unique ID for unregistered users
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for( var i=0; i < 5; i++ )
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+  return text;
+};
 
 FormatHistory = function(history) {
   var result = history.map(function(notation, idx) {
