@@ -24,20 +24,18 @@ var GameShow = ReactMeteor.createClass({
     this.receiveUndoAcception(); // listen for undo accept
     this.receiveUndoDecline(); // listen to decline of undo requests
     this.receiveDrawDecline(); // listen to decline of draw requests
-    this.receiveDrawAcception();
-    this.receiveResignation();
+    this.receiveDrawAcception(); // listen to other user's draw acception
+    this.receiveResignation(); // listen to other user's resignation
     var data = {chess: this.state.chess};
     var config = new CFG(data, this.onDropCallback).render();
-    var config = _.extend(config, {
+    _.extend(config, {
       position    : _.last(this.state.game.fen),
       draggable   : this.props.isPlayer(),
       orientation : this.props.userColor(),
       onDragStart : this.onDragStart,
       onSnapEnd   : this.onSnapEnd
     });
-    if (! this.state.game.gameOver) {
-      this.setState({board: new ChessBoard('board', config)}); // initialize chessboard
-    }
+    if (! this.state.game.gameOver) this.setState({board: new ChessBoard('board', config)});
   },
   componentDidUpdate: function() {
     if (this.needsUpdate()) { // listen for new moves
@@ -328,8 +326,11 @@ var GameShow = ReactMeteor.createClass({
     var currentUserTimer  = this.getTimer(this.props.userColor());
     var opponentTimer     = this.getTimer(this.props.getOpponentColor());
     var formattedHistory  = this.formatHistory();
-    var bottomPlayer = this.props.getBottomPlayer() || {name: "", rating: "", country: ""}; 
-    var topPlayer = this.props.getTopPlayer() || {name: "", rating: "", country: ""};
+    var bottomPlayer = this.props.getBottomPlayer(Meteor.userId()) || {name: "", rating: "", country: ""};
+    var topPlayer = this.props.getTopPlayer(Meteor.userId()) || {name: "", rating: "", country: ""};
+    console.log("userID" , Meteor.userId());
+    console.log("bottom", bottomPlayer);
+    console.log("top", topPlayer);
     var messages = this.state.messages.map(function(msg, idx) {
       return <MessageComponent
         idx={idx}

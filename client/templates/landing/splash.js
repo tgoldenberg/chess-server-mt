@@ -3,5 +3,6 @@ Template.splash.onRendered(function() {
   Meteor.subscribe('gamesInPlay');
   Meteor.subscribe('totalGames');
   Meteor.subscribe('twentyGames');
+  Meteor.subscribe('availableUsers');
   TwitterShare();
 });

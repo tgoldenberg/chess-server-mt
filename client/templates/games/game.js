@@ -163,22 +163,20 @@ Template.game.helpers({
         return game.white ? game.white.name : "N/A";
       }
     };
-    function getBottomPlayer() {
+    function getBottomPlayer(userId) {
       if (isPlayer()) {
-        if (game.white) {
-          return Meteor.userId() == game.white._id ? game.black : game.white;
-        }
+        var blackId = Games.findOne(id).black != null ? Games.findOne(id).black.userId : null;
+        return userId == blackId ? Games.findOne(id).black : Games.findOne(id).white;
       } else {
         return game.white ? game.white : {profile: {name: "N/A", rating: "N/A", country: "N/A"}};
       }
     };
-    function getTopPlayer() {
+    function getTopPlayer(userId) {
       if (isPlayer()) {
-        if (game.white) {
-          return game.white != null ? game.white : {name: "N/A", rating: "N/A", country: "N/A"};
-        }
+        var blackId = Games.findOne(id).black != null ? Games.findOne(id).black.userId : null;
+        return userId == blackId ? Games.findOne(id).white : Games.findOne(id).black;
       } else {
-        return game.black != null ? game.black : {profile: {name: "N/A", rating: "N/A", country: "N/A"}};
+        return Games.findOne(id).black != null ? Games.findOne(id).black : {profile: {name: "N/A", rating: "N/A", country: "N/A"}};
       }
     };
     return {
