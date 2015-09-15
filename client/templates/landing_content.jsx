@@ -169,7 +169,7 @@ var Splash = ReactMeteor.createClass({
 						</form><br/>
 						<p className="fb-invite">Invite your friends to a game through Faceboook or Twitter!</p>
 							<div className="social-share">
-		            <a id="facebook_share" onClick={this.facebookShare} href="https://www.facebook.com/sharer/sharer.php?u=href=https://speakitlanguages.com&display=popup&ref=plugin">
+		            <a id="facebook_share" onClick={this.facebookShare} href="https://www.facebook.com/sharer/sharer.php?u=href=http://chessmentor.meteor.com&display=popup&ref=plugin">
 		              <i className="fa fa-facebook"> Share</i>
 		            </a>
 		            <a
