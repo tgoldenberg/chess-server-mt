@@ -50,7 +50,7 @@ AnalyzeGameComponent = ReactMeteor.createClass({
     }
   },
   forward: function() {
-    console.log("FORWARD");
+    console.log("FORWARD", this.state.index);
     var index = this.state.index;
     var nextMove = this.props.game.moves[index];
     console.log(nextMove);
@@ -68,20 +68,45 @@ AnalyzeGameComponent = ReactMeteor.createClass({
     this.state.board.position(this.props.chess.fen());
     this.setState({index: 1});
   },
+  goToEnd: function() {
+    console.log("GOTO END");
+    var numMoves = this.props.game.moves.length; // 11
+    var index = this.state.index;
+    for (i = index; i < numMoves; i++) {
+      var nextMove = this.props.game.moves[i];
+      this.props.chess.move({from: nextMove.source, to: nextMove.target, promotion: 'q'});
+    }
+    this.setState({index: numMoves});
+    this.state.board.position(this.props.chess.fen());
+  },
   skipBack: function() {
     console.log("SKIP BACK");
+    var numMoves = this.props.game.moves.length;
+    var index = this.state.index;
+    var num = 0;
+    for (i = 0; i < 3; i++) {
+      if (index - i > 0) {
+        this.props.chess.undo();
+        num += 1;
+      }
+    }
+    this.setState({index: index - num})
+    this.state.board.position(this.props.chess.fen());
   },
   skipForward: function(){
     console.log("SKIP FORWARD");
-  },
-  goToEnd: function() {
-    console.log("GOTO END");
-    while (this.props.chess.history().length < this.props.game.moves.length-2) {
-      var nextMove = this.props.game.moves[this.state.index];
-      this.props.chess.move({from: nextMove.source, to: nextMove.target, promotion: 'q'});
-      this.setState({index: this.state.index+1})
+    var numMoves = this.props.game.moves.length;
+    var index = this.state.index;
+    var num = 0;
+    for (i = 0; i < 3; i++) {
+      if (index + i < numMoves) {
+        var nextMove = this.props.game.moves[index+i]
+        this.props.chess.move({from: nextMove.source, to: nextMove.target, promotion: 'q'});
+        num += 1;
+      }
     }
-    this.props.board.position(this.props.chess.fen());
+    this.setState({index: index + num})
+    this.state.board.position(this.props.chess.fen());
   },
   handleClick: function(e) {
     e.preventDefault();
@@ -99,6 +124,7 @@ AnalyzeGameComponent = ReactMeteor.createClass({
     var next = ">";
     var nearEnd = ">>";
     var ending = ">>>";
+    console.log(this.state.index);
 
     return (
       <div className="game-wrapper">
