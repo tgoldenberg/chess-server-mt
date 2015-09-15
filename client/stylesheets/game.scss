@@ -11,19 +11,26 @@ $dark-red: #8b4441;
 $button-alert: rgb(202, 60, 60);
 $button-success: rgb(28, 184, 65);
 $action-color: #477DCA !default;
-
+body {
+  overflow: hidden;
+}
 #game-page-wrapper {
   height: inherit;
   overflow-y: hidden;
+  margin-top: 60px;
 }
 .game-wrapper {
   height: inherit;
+  display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+  display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+  display: -ms-flexbox;      /* TWEENER - IE 10 */
+  display: -webkit-flex;     /* NEW - Chrome */
   display: flex;
   align-items: center;
   justify-content: center;
   background: #e6e6e6;
   #board {
-    margin-top: 75px;
+    margin-top: 15px;
     margin-right: 8%;
     @media screen and (max-width: 500px) {
       width: 400px;
@@ -42,6 +49,10 @@ $action-color: #477DCA !default;
       padding-top: 1em;
       padding-left: 1%;
       padding-right: 1%;
+      display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+      display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+      display: -ms-flexbox;      /* TWEENER - IE 10 */
+      display: -webkit-flex;     /* NEW - Chrome */
       display: flex;
     }
     .button {
@@ -84,6 +95,10 @@ $action-color: #477DCA !default;
           }
         }
         .profile-header {
+          display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+          display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+          display: -ms-flexbox;      /* TWEENER - IE 10 */
+          display: -webkit-flex;     /* NEW - Chrome */
           display: flex;
           background: $darker-brown;
           border-top-left-radius: 4px;
@@ -126,10 +141,18 @@ $action-color: #477DCA !default;
           }
         }
         .timer-header {
+          display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+          display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+          display: -ms-flexbox;      /* TWEENER - IE 10 */
+          display: -webkit-flex;     /* NEW - Chrome */
           display: flex;
           border-bottom: 1px solid #c6c6c6;
           padding-left: 1em;
           .minimize {
+            display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+            display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+            display: -ms-flexbox;      /* TWEENER - IE 10 */
+            display: -webkit-flex;     /* NEW - Chrome */
             display: flex;
             clear: both;
             min-width: 50px;
@@ -145,6 +168,10 @@ $action-color: #477DCA !default;
           }
           .timer-player {
             width: 100%;
+            display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+            display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+            display: -ms-flexbox;      /* TWEENER - IE 10 */
+            display: -webkit-flex;     /* NEW - Chrome */
             display: flex;
             .glyphicon, p {
               font-size: 1.2em;
@@ -174,29 +201,37 @@ $action-color: #477DCA !default;
     }
     .current-player {
       .profile {
-        height: 40%;
+        height: 43%;
       }
     }
   }
   div.player-info {
     background: #e6e6e6;
   }
+  div.game-messages {
+    margin-top: 25px;
+    right: 0;
+    top: 0px;
+  }
   .player-info, .game-messages,  {
     height: inherit;
     background: #f7f7f7;
     width: 33.3%;
-    margin-top: 130px;
     margin-left: 5px;
     margin-right: 5px;
     @media screen and (max-width: 500px) {
       display: none;
     }
-
     .messages-holder {
-      text-align: center;
+      .user-messages-content {
+        height: 130px;
+      }
+      #text-message {
+
+      }
       input {
-        margin: auto;
-        width: 320px;
+        width: 96%;
+        margin-left: 10px;
         font-size: 1em;
         padding-top: 12px;
       }
@@ -247,8 +282,16 @@ $action-color: #477DCA !default;
       height: 150px;
       overflow-y: auto;
     }
+    .game-history-analyze {
+      height: 400px;
+      overflow-y: auto;
+    }
   }
   .history-line {
+    display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+    display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+    display: -ms-flexbox;      /* TWEENER - IE 10 */
+    display: -webkit-flex;     /* NEW - Chrome */
     display: flex;
     p:nth-child(1) {
       float: left;
@@ -273,16 +316,12 @@ $action-color: #477DCA !default;
       padding-left: .2em;
     }
   }
-  .player-info {
-    margin-top: 150px;
-  }
 }
 .game-messages {
   min-width: 330px;
   .messages-holder {
     .user-messages-content {
       text-align: left;
-      height: 4.5em;
       overflow-y: auto;
       background: #e6e6e6;
       border-radius: 3px;
@@ -313,7 +352,7 @@ $action-color: #477DCA !default;
           padding: .5em;
           border-radius: 4px;
           font-weight: 400;
-          width: 60%;
+          width: 80%;
         }
         p.message-from {
           font-weight: 300;

@@ -11,6 +11,8 @@ var Splash = ReactMeteor.createClass({
 			recentGames: Games.find({joinedAt: { $ne: null}}, {$sort: {createdAt: 1}, limit: 20})
     };
   },
+	componentWillMount: function() {
+	},
   sendToGame: function() {
     if (this.sameUser()) { // make sure user doesn't request twice
       alert('cannot request twice');
@@ -130,19 +132,10 @@ var Splash = ReactMeteor.createClass({
 		Session.set('userId', makeid());
   },
 	facebookShare: function(e) {
+		var url = $('#facebook_share').attr('href');
+		return !window.open(url, 'Share on Facebook', 'width=640, height=536');
 	},
 	render: function() {
-		var fbGraph = "https://www.facebook.com/dialog/share_open_graph?" +
-		  "app_id=145634995501895" +
-		  "&display=popup" +
-		  "&action_type=og.likes" +
-		  "&action_properties=%7B%22object%22%3A%22https%3A%2F%2Fdevelopers.facebook.com%2Fdocs%2F%22%7D" +
-		  "&redirect_uri=https%3A%2F%2Fdevelopers.facebook.com%2Ftools%2Fexplorer";
-		var twitterURL = "http://platform.twitter.com/widgets/tweet_button.1362636220.html#_=1363023601135&" +
-			"count=none&amp;id=twitter-widget-0&" +
-			"lang=en&amp;original_referer=http://localhost:3000&" +
-			"text=Check out Speakit!&" +
-			"url=http://localhost:3000&size=m";
 		var averageWait = 0;
 		if (this.state.recentGames.count() > 0 ) {
 			var timeDiff = 0;
@@ -175,19 +168,17 @@ var Splash = ReactMeteor.createClass({
 							<input type="text" name="username" autofocus/>
 						</form><br/>
 						<p className="fb-invite">Invite your friends to a game through Faceboook or Twitter!</p>
-						<div className="social-share">
-							<div className="fb-share-button"
-				         data-href="http://www.your-domain.com/your-page.html"
-								 data-type="button"
-				         data-layout="button">
-					    </div>
-							<a className="twitter-share-button"
-								data-count="none"
-							  href="https://twitter.com/intent/tweet?text=Hello%20world"
-							  data-size="large">
-								Tweet
-							</a>
-						</div>
+							<div className="social-share">
+		            <a id="facebook_share" onClick={this.facebookShare} href="https://www.facebook.com/sharer/sharer.php?u=href=https://speakitlanguages.com&display=popup&ref=plugin">
+		              <i className="fa fa-facebook"> Share</i>
+		            </a>
+		            <a
+		              data-count="none"
+		              href="https://twitter.com/intent/tweet?text=Come%20join%20me%20for%20a%20game%20of%20chess%20at%20http://speakitlanguages.com"
+		              data-size="large">
+		              <i className="fa fa-twitter"> Tweet</i>
+		            </a>
+		          </div>
 					</div>
 				</div>
 			</div>

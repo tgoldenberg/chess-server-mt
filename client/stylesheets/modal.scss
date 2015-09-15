@@ -11,20 +11,20 @@ $dark-red: #8b4441;
 $button-alert: rgb(202, 60, 60);
 $button-success: rgb(28, 184, 65);
 $action-color: #477DCA !default;
-
+i.fa.fa-twitter, i.fa.fa-facebook {
+  color: white;
+  border-radius: 4px;
+  padding: .5em .8em;
+}
+i.fa.fa-facebook {
+  background: #3B5998;
+}
+i.fa.fa-twitter {
+  background: #00aced;
+  margin-left: .5em;
+}
 #myModal {
-  i.fa.fa-twitter, i.fa.fa-facebook {
-    color: white;
-    border-radius: 4px;
-    padding: .5em .8em;
-  }
-  i.fa.fa-facebook {
-    background: #3B5998;
-  }
-  i.fa.fa-twitter {
-    background: #00aced;
-    margin-left: .5em;
-  }
+
   .modal-dialog {
     .modal-content {
       .modal-header {
