@@ -174,7 +174,7 @@ var Splash = ReactMeteor.createClass({
 		            </a>
 		            <a
 		              data-count="none"
-		              href="https://twitter.com/intent/tweet?text=Hello%20world"
+		              href="https://twitter.com/intent/tweet?text=Come%20join%20me%20for%20a%20game%20of%20chess%20at%20http://speakitlanguages.com"
 		              data-size="large">
 		              <i className="fa fa-twitter"> Tweet</i>
 		            </a>
