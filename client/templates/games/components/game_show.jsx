@@ -227,7 +227,9 @@ var GameShow = ReactMeteor.createClass({
   },
   emitMessage: function(stream) {
     Streamy.rooms(this.props.game._id).emit(stream, {
-      from: this.props.getUsername(), message: this.props.getOpponentId(), submitted: new Date()
+      from: this.props.getUsername(),
+      message: this.props.getOpponentId(),
+      submitted: new Date()
     });
   },
   handleUndoRequest: function() {
@@ -328,9 +330,6 @@ var GameShow = ReactMeteor.createClass({
     var formattedHistory  = this.formatHistory();
     var bottomPlayer = this.props.getBottomPlayer(Meteor.userId()) || {name: "", rating: "", country: ""};
     var topPlayer = this.props.getTopPlayer(Meteor.userId()) || {name: "", rating: "", country: ""};
-    console.log("userID" , Meteor.userId());
-    console.log("bottom", bottomPlayer);
-    console.log("top", topPlayer);
     var messages = this.state.messages.map(function(msg, idx) {
       return <MessageComponent
         idx={idx}
